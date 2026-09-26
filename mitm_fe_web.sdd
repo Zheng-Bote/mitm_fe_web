@@ -1,0 +1,15 @@
+Spec: Admin Frontend Web (Angular)
+Purpose: Modern Web UI for managing and monitoring the MitM Data Aggregator.
+
+Platform: Angular v22 / TypeScript
+
+Structure:
+  ./src/
+  ./public/
+
+Owns:
+  ./**
+
+Must:
+  Communicate securely via HTTPS with the core-layer REST API.
+  Provide responsive design suitable for desktop and tablet usage.
