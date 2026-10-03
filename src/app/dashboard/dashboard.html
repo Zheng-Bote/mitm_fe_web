@@ -1,0 +1,103 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold tracking-tight">Dashboard Overview</h2>
+    <button (click)="fetchData()" class="px-4 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition shadow-sm text-sm font-medium">
+      Refresh Data
+    </button>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <!-- Health Card -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">System Health</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-2xl font-bold">{{ systemHealth() }}</div>
+      </div>
+    </div>
+
+    <!-- Engine Info -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">Engine Info</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-sm text-slate-600 whitespace-pre-line">{{ engineInfo() }}</div>
+      </div>
+    </div>
+
+    <!-- Database Info -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">Database</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-sm text-slate-600 whitespace-pre-line">{{ dbInfo() }}</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="text-xl font-bold tracking-tight mt-8 mb-4">Statistics</h3>
+  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <!-- Scheduled Jobs -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">Total Scheduled Jobs</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-2xl font-bold">{{ totalJobs() }}</div>
+      </div>
+    </div>
+
+    <!-- DLQ Cursors -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">Dead Letter Queue</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-2xl font-bold text-red-600">{{ dlqCursors() }}</div>
+      </div>
+    </div>
+
+    <!-- Admin Audit Logs -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">Admin Audit Logs</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-2xl font-bold">{{ adminAuditLogs() }}</div>
+      </div>
+    </div>
+
+    <!-- System Logs -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">System Logs</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-2xl font-bold">{{ systemLogs() }}</div>
+      </div>
+    </div>
+
+    <!-- Job Audit Logs -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">Job Audit Logs</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-2xl font-bold">{{ jobAuditLogs() }}</div>
+      </div>
+    </div>
+
+    <!-- Transformation Errors -->
+    <div class="rounded-xl border bg-white text-slate-950 shadow-sm">
+      <div class="p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+        <h3 class="tracking-tight text-sm font-medium">Transformation Errors</h3>
+      </div>
+      <div class="p-6 pt-0">
+        <div class="text-2xl font-bold text-red-600">{{ transformationErrors() }}</div>
+      </div>
+    </div>
+  </div>
+</div>

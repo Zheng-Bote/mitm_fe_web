@@ -1,0 +1,42 @@
+<div class="flex h-screen bg-slate-50 font-sans text-slate-900">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-slate-900 text-white flex flex-col hidden md:flex">
+    <div class="h-16 flex items-center px-6 bg-slate-950 font-bold text-xl gap-3">
+      <img src="img/logo_92x92.png" alt="MitM Logo" class="h-8 w-8" />
+      MitM Admin
+    </div>
+    <nav class="flex-1 px-4 py-6 space-y-2">
+      <a routerLink="/dashboard" routerLinkActive="bg-slate-800" class="block px-4 py-2 rounded hover:bg-slate-800 transition">Dashboard</a>
+      <a routerLink="/scheduler" routerLinkActive="bg-slate-800" class="block px-4 py-2 rounded hover:bg-slate-800 transition text-slate-400">Scheduler</a>
+      <a routerLink="/logs" routerLinkActive="bg-slate-800" class="block px-4 py-2 rounded hover:bg-slate-800 transition text-slate-400">Logs</a>
+      <a routerLink="/settings" routerLinkActive="bg-slate-800" class="block px-4 py-2 rounded hover:bg-slate-800 transition text-slate-400">Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <header class="h-16 bg-white shadow-sm flex items-center px-6 justify-between shrink-0 border-b">
+      <div class="text-xl font-semibold md:hidden flex items-center gap-2">
+        <img src="img/logo_92x92.png" alt="MitM Logo" class="h-8 w-8" />
+        MitM Admin Panel
+      </div>
+      <div class="hidden md:block text-xl font-semibold">
+        MitM Admin Panel
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full">Admin</span>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-1 overflow-auto p-6">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t p-4 text-center text-sm text-slate-500 shrink-0">
+      &copy; 2026 ZHENG Robert - MitM Data Aggregator Web Panel
+    </footer>
+  </div>
+</div>
