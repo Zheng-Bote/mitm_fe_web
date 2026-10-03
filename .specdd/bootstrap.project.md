@@ -7,3 +7,6 @@
 - For more details on the integration and mapping, refer to `docs/SpecDD_SpecKit_Integration_EN.md` (or the `_DE` version).
 - For instructions on how AI Agents should interact with the SpecDD framework and resolve constraints, refer to `docs/AI_Workflow_DE.md`.
 - For instructions on how AI Agents should interact with the SpecDD framework and resolve constraints, refer to `docs/AI_Workflow_EN.md` (or the DE equivalent).
+
+## Web Frontend Specific Rules
+- **Architecture**: We strictly use a **Feature-Based Directory Structure** for the Angular Web Frontend. Do not separate files by technical types (e.g. all components in a components folder). Group them by business domain features (e.g., `auth`, `dashboard`, `logs`).

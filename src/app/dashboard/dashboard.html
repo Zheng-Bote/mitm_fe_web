@@ -56,7 +56,12 @@
         <h3 class="tracking-tight text-sm font-medium">Dead Letter Queue</h3>
       </div>
       <div class="p-6 pt-0">
-        <div class="text-2xl font-bold text-red-600">{{ dlqCursors() }}</div>
+        <div class="text-2xl font-bold"
+             [class.text-green-600]="dlqCursors() === 0"
+             [class.text-red-600]="dlqCursors() !== 0 && dlqCursors() !== 'Loading...' && dlqCursors() !== '-'"
+             [class.text-gray-400]="dlqCursors() === 'Loading...' || dlqCursors() === '-'">
+          {{ dlqCursors() }}
+        </div>
       </div>
     </div>
 
@@ -96,7 +101,12 @@
         <h3 class="tracking-tight text-sm font-medium">Transformation Errors</h3>
       </div>
       <div class="p-6 pt-0">
-        <div class="text-2xl font-bold text-red-600">{{ transformationErrors() }}</div>
+        <div class="text-2xl font-bold"
+             [class.text-green-600]="transformationErrors() === 0"
+             [class.text-red-600]="transformationErrors() !== 0 && transformationErrors() !== 'Loading...' && transformationErrors() !== '-'"
+             [class.text-gray-400]="transformationErrors() === 'Loading...' || transformationErrors() === '-'">
+          {{ transformationErrors() }}
+        </div>
       </div>
     </div>
   </div>

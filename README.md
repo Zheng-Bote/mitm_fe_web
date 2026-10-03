@@ -2,6 +2,13 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.0.
 
+## Architecture
+
+This project strictly adheres to a **Feature-Based Directory Structure**.
+- Code should be grouped by business feature or domain (e.g., `auth`, `dashboard`, `logs`) rather than by technical type (e.g., separating all `components` from all `services`).
+- Each feature directory should contain its own components, services, models, and routing logic to ensure modularity and scalability.
+- Core and shared infrastructure (interceptors, generic UI components like Spartan UI) reside in `core` or `shared` directories.
+
 ## Development server
 
 To start a local development server, run:

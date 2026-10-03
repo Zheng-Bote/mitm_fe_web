@@ -27,10 +27,10 @@ export class Dashboard implements OnInit {
 
   fetchData() {
     // Health
-    this.http.get<{status: string}>('/health').pipe(
+    this.http.get<{ status: string }>('/health').pipe(
       catchError(() => of({ status: 'Error 🔴' }))
     ).subscribe(res => {
-      this.systemHealth.set(res.status === 'ok' ? 'Healthy 🟢' : res.status);
+      this.systemHealth.set(res.status === 'ready' ? 'Healthy 🟢' : res.status);
     });
 
     // Info
@@ -45,7 +45,7 @@ export class Dashboard implements OnInit {
           });
         }
         this.engineInfo.set(engineStr.trim());
-        
+
         let dbStr = `DB: ${res.database?.name || 'mitm'}\n`;
         if (res.database?.size) {
           dbStr += `Size: ${res.database.size}\n`;
@@ -60,7 +60,7 @@ export class Dashboard implements OnInit {
 
     // Dashboard Stats (via individual v1 endpoints)
     const countFallback = catchError(() => of(null));
-    
+
     const getCount = (data: any, field?: string) => {
       if (!data) return '-';
       if (Array.isArray(data)) return data.length;
@@ -70,11 +70,11 @@ export class Dashboard implements OnInit {
 
     forkJoin({
       jobs: this.http.get<any>('/admin/jobs').pipe(countFallback),
-      dlq: this.http.get<any>('/api/public/v1/dlq').pipe(countFallback), // Public V1 endpoint works
-      adminAudit: this.http.get<any>('/admin/logs/admin-audit').pipe(countFallback),
-      systemLogs: this.http.get<any>('/admin/logs/system').pipe(countFallback),
-      jobAudit: this.http.get<any>('/admin/logs/job-audit').pipe(countFallback),
-      transformErrors: this.http.get<any>('/admin/transformation/errors').pipe(countFallback)
+      dlq: this.http.get<any>('/api/public/v1/dlq').pipe(countFallback),
+      adminAudit: this.http.get<any>('/api/admin/v1/logs/admin-audit').pipe(countFallback),
+      systemLogs: this.http.get<any>('/api/admin/v1/logs/system').pipe(countFallback),
+      jobAudit: this.http.get<any>('/api/admin/v1/logs/job-audit').pipe(countFallback),
+      transformErrors: this.http.get<any>('/api/transformation/v1/errors').pipe(countFallback)
     }).subscribe(results => {
       this.totalJobs.set(getCount(results.jobs));
       this.dlqCursors.set(getCount(results.dlq));

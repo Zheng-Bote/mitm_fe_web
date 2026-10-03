@@ -63,16 +63,86 @@ export class LoginComponent {
   osUser = signal<string>('');
   isLoading = signal<boolean>(false);
   errorMessage = signal<string>('');
+  webAuthnAvailable = signal<boolean>(false);
 
-  onSubmit() {
+  async ngOnInit() {
+    if (window.PublicKeyCredential) {
+      const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      this.webAuthnAvailable.set(available);
+    }
+  }
+
+  async onSubmit() {
     if (!this.osUser()) return;
     
     this.isLoading.set(true);
     this.errorMessage.set('');
 
+    // Optional WebAuthn / Windows Hello enforcement for extra local security
+    if (this.webAuthnAvailable()) {
+      try {
+        await this.triggerWebAuthn();
+      } catch (err: any) {
+        if (err.name === 'NotAllowedError') {
+          this.isLoading.set(false);
+          this.errorMessage.set('Windows Hello authentication was cancelled.');
+          return; // Block login ONLY if user actively cancels
+        }
+        console.warn('WebAuthn failed or not supported by browser, falling back to direct login.', err);
+        // Do NOT return here. Proceed with login as fallback.
+      }
+    }
+
+    this.proceedWithLogin();
+  }
+
+  private async triggerWebAuthn(): Promise<void> {
+    const challenge = new Uint8Array(32);
+    window.crypto.getRandomValues(challenge);
+    
+    try {
+      // 1. Try to authenticate with an existing local passkey
+      await navigator.credentials.get({
+        publicKey: {
+          challenge: challenge,
+          userVerification: "required",
+          timeout: 60000
+        }
+      });
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        throw err; // User actively cancelled the prompt
+      }
+      
+      // 2. If no passkey exists on this device yet, register a local dummy passkey
+      // to trigger Windows Hello / TouchID setup for this domain
+      const userId = new Uint8Array(16);
+      window.crypto.getRandomValues(userId);
+      
+      await navigator.credentials.create({
+        publicKey: {
+          challenge: challenge,
+          rp: { name: "MitM Admin Control Plane", id: window.location.hostname },
+          user: {
+            id: userId,
+            name: this.osUser(),
+            displayName: this.osUser()
+          },
+          pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required",
+            residentKey: "required"
+          },
+          timeout: 60000
+        }
+      });
+    }
+  }
+
+  private proceedWithLogin() {
     this.authService.login(this.osUser()).subscribe({
       next: () => {
-        // Fetch roles after successful login
         this.authService.fetchRoles().subscribe({
           next: () => {
             this.router.navigate(['/dashboard']);
