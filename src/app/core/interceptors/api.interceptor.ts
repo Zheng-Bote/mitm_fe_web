@@ -28,7 +28,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Inject Bearer token if we have one and we are not calling the session endpoint
   const token = authService.sessionToken();
-  if (token && !req.url.includes('/api/user/v1/session')) {
+  if (token && !req.url.includes('/api/v1/auth/session')) {
     headers = headers.set('Authorization', `Bearer ${token}`);
   }
 

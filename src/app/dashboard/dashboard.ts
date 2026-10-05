@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
-import { of, forkJoin } from 'rxjs';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -34,7 +34,7 @@ export class Dashboard implements OnInit {
     });
 
     // Info
-    this.http.get<any>('/api/system/v1/info').pipe(
+    this.http.get<any>('/api/v1/system/info').pipe(
       catchError(() => of(null))
     ).subscribe(res => {
       if (res) {
@@ -45,43 +45,40 @@ export class Dashboard implements OnInit {
           });
         }
         this.engineInfo.set(engineStr.trim());
-
-        let dbStr = `DB: ${res.database?.name || 'mitm'}\n`;
-        if (res.database?.size) {
-          dbStr += `Size: ${res.database.size}\n`;
-        }
-        dbStr += `${res.database?.version || 'Unknown'}\n`;
-        this.dbInfo.set(dbStr.trim());
       } else {
         this.engineInfo.set('Offline');
-        this.dbInfo.set('Offline');
       }
     });
 
-    // Dashboard Stats (via individual v1 endpoints)
-    const countFallback = catchError(() => of(null));
+    // Dashboard Stats (via unified v1 endpoint)
+    this.http.get<any>('/api/v1/system/dashboard').pipe(
+      catchError(() => of(null))
+    ).subscribe(res => {
+      if (res) {
+        let dbStr = `DB: ${res.db_name || 'mitm'}\n`;
+        if (res.db_size) {
+          dbStr += `Size: ${res.db_size}\n`;
+        }
+        dbStr += `${res.db_version || 'Unknown'}\n`;
+        this.dbInfo.set(dbStr.trim());
 
-    const getCount = (data: any, field?: string) => {
-      if (!data) return '-';
-      if (Array.isArray(data)) return data.length;
-      if (field && Array.isArray(data[field])) return data[field].length;
-      return '-';
-    };
-
-    forkJoin({
-      jobs: this.http.get<any>('/admin/jobs').pipe(countFallback),
-      dlq: this.http.get<any>('/api/public/v1/dlq').pipe(countFallback),
-      adminAudit: this.http.get<any>('/api/admin/v1/logs/admin-audit').pipe(countFallback),
-      systemLogs: this.http.get<any>('/api/admin/v1/logs/system').pipe(countFallback),
-      jobAudit: this.http.get<any>('/api/admin/v1/logs/job-audit').pipe(countFallback),
-      transformErrors: this.http.get<any>('/api/transformation/v1/errors').pipe(countFallback)
-    }).subscribe(results => {
-      this.totalJobs.set(getCount(results.jobs));
-      this.dlqCursors.set(getCount(results.dlq));
-      this.adminAuditLogs.set(getCount(results.adminAudit, 'logs'));
-      this.systemLogs.set(getCount(results.systemLogs, 'logs'));
-      this.jobAuditLogs.set(getCount(results.jobAudit, 'logs'));
-      this.transformationErrors.set(getCount(results.transformErrors, 'errors'));
+        if (res.stats) {
+          this.totalJobs.set(res.stats.total_scheduled_jobs ?? '-');
+          this.dlqCursors.set(res.stats.dlq?.count ?? '-');
+          this.adminAuditLogs.set(res.stats.admin_audit_logs?.count ?? '-');
+          this.systemLogs.set(res.stats.system_logs?.count ?? '-');
+          this.jobAuditLogs.set(res.stats.job_audit_logs?.count ?? '-');
+          this.transformationErrors.set(res.stats.transformation_errors?.count ?? '-');
+        }
+      } else {
+        this.dbInfo.set('Offline');
+        this.totalJobs.set('-');
+        this.dlqCursors.set('-');
+        this.adminAuditLogs.set('-');
+        this.systemLogs.set('-');
+        this.jobAuditLogs.set('-');
+        this.transformationErrors.set('-');
+      }
     });
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
 import { Observable, throwError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -35,7 +35,7 @@ export class AuthService {
       os_user: osUser
     };
     
-    return this.http.post<SessionResponse>(`/api/user/v1/session`, payload).pipe(
+    return this.http.post<SessionResponse>(`/api/v1/auth/session`, payload).pipe(
       tap(response => {
         if (response && response.session_token) {
           this._sessionToken.set(response.session_token);
@@ -53,7 +53,8 @@ export class AuthService {
       return of([]);
     }
     
-    return this.http.get<string[]>(`/api/user/v1/roles`).pipe(
+    return this.http.get<{ roles: string[] }>(`/api/v1/auth/me`).pipe(
+      map(response => response.roles || []),
       tap(roles => {
         this._roles.set(roles);
       }),
