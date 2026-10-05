@@ -27,10 +27,10 @@ export class Dashboard implements OnInit {
 
   fetchData() {
     // Health
-    this.http.get<{ status: string }>('/health').pipe(
-      catchError(() => of({ status: 'Error 🔴' }))
+    this.http.get<any>('/api/v1/system/info').pipe(
+      catchError(() => of(null))
     ).subscribe(res => {
-      this.systemHealth.set(res.status === 'ready' ? 'Healthy 🟢' : res.status);
+      this.systemHealth.set(res ? 'Healthy 🟢' : 'Error 🔴');
     });
 
     // Info
