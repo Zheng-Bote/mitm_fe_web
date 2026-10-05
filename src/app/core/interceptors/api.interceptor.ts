@@ -15,7 +15,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Prepend the base URL from the environment
   let finalUrl = req.url;
-  if (environment.apiUrl && !req.url.startsWith(environment.apiUrl)) {
+  if (environment.apiUrl && !req.url.startsWith(environment.apiUrl) && !req.url.startsWith('/health')) {
     finalUrl = `${environment.apiUrl}${req.url.startsWith('/') ? '' : '/'}${req.url}`;
   }
 
