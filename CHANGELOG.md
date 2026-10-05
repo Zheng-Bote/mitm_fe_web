@@ -5,6 +5,15 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.0] - 2026-10-05
+
+### Changed
+- **API Migration**: Updated all frontend API calls (`/api/v1/system/dashboard`, `/api/v1/system/info`, `/api/v1/auth/session`, `/api/v1/auth/me`) to seamlessly align with the backend's new unified API v1 structure.
+- **Dashboard Refactoring**: Replaced multiple individual data fetching calls (`forkJoin`) with a single unified request to `/api/v1/system/dashboard`, significantly reducing network overhead and improving performance.
+
+### Fixed
+- **API Interceptor**: Fixed a bug where the `/health` endpoint was incorrectly prefixed with the API base URL (resulting in a 404 `/api/health`). The interceptor now explicitly ignores the health check route.
+
 ## [v0.2.0] - 2026-10-03
 
 ### Added
