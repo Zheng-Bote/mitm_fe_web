@@ -74,24 +74,24 @@ export class LoginComponent {
 
   async onSubmit() {
     if (!this.osUser()) return;
-    
+
     this.isLoading.set(true);
     this.errorMessage.set('');
 
     // Optional WebAuthn / Windows Hello enforcement for extra local security
-    if (this.webAuthnAvailable()) {
-      try {
-        await this.triggerWebAuthn();
-      } catch (err: any) {
-        if (err.name === 'NotAllowedError') {
-          this.isLoading.set(false);
-          this.errorMessage.set('Windows Hello authentication was cancelled.');
-          return; // Block login ONLY if user actively cancels
-        }
-        console.warn('WebAuthn failed or not supported by browser, falling back to direct login.', err);
-        // Do NOT return here. Proceed with login as fallback.
-      }
-    }
+    //    if (this.webAuthnAvailable()) {
+    //      try {
+    //        await this.triggerWebAuthn();
+    //      } catch (err: any) {
+    //        if (err.name === 'NotAllowedError') {
+    //          this.isLoading.set(false);
+    //          this.errorMessage.set('Windows Hello authentication was cancelled.');
+    //          return; // Block login ONLY if user actively cancels
+    //        }
+    //        console.warn('WebAuthn failed or not supported by browser, falling back to direct login.', err);
+    //        // Do NOT return here. Proceed with login as fallback.
+    //      }
+    //    }
 
     this.proceedWithLogin();
   }
@@ -99,7 +99,7 @@ export class LoginComponent {
   private async triggerWebAuthn(): Promise<void> {
     const challenge = new Uint8Array(32);
     window.crypto.getRandomValues(challenge);
-    
+
     try {
       // 1. Try to authenticate with an existing local passkey
       await navigator.credentials.get({
@@ -113,12 +113,12 @@ export class LoginComponent {
       if (err.name === 'NotAllowedError') {
         throw err; // User actively cancelled the prompt
       }
-      
+
       // 2. If no passkey exists on this device yet, register a local dummy passkey
       // to trigger Windows Hello / TouchID setup for this domain
       const userId = new Uint8Array(16);
       window.crypto.getRandomValues(userId);
-      
+
       await navigator.credentials.create({
         publicKey: {
           challenge: challenge,
