@@ -9,6 +9,11 @@ This project strictly adheres to a **Feature-Based Directory Structure**.
 - Each feature directory should contain its own components, services, models, and routing logic to ensure modularity and scalability.
 - Core and shared infrastructure (interceptors, generic UI components like Spartan UI) reside in `core` or `shared` directories.
 
+## Features
+- **Dashboard**: High-level system overview and metrics.
+- **Scheduler**: Job listing and execution control.
+- **Audit Logs**: Job execution audit trails with CSV and Excel export (via FlatBuffers for high performance).
+
 ## Development server
 
 To start a local development server, run:
