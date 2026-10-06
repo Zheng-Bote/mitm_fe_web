@@ -4,11 +4,11 @@
 The Web-Frontend requires a "Logs" feature to display audit logs, mirroring the functionality of the C++ `AuditLogsWidget.cpp`. The component should fetch data from the backend API, provide real-time updates (auto-refresh), allow date-range filtering, and support exporting the data to CSV and Excel.
 
 ## 2. EARS Requirements
-1. **When** the user navigates to the Audit Logs view, **the system shall** fetch the latest audit logs from `GET /api/v1/logs/audit` using JSON format.
+1. **When** the user navigates to the Audit Logs view, **the system shall** fetch the latest audit logs from `GET /api/v1/logs/audit` using `application/x-flatbuffers` format for optimal performance.
 2. **If** the user enables "Auto-Refresh (5s)", **the system shall** poll the API every 5 seconds to update the table data.
 3. **While** the "Filter by Date" option is checked, **the system shall** include `from` and `to` query parameters in the API request based on the selected dates.
 4. **When** the user clicks "Export CSV", **the system shall** generate and download a CSV file containing the currently displayed table data.
-5. **When** the user clicks "Export Report", **the system shall** open a dialog for date range, job name, and topic, fetch the raw data, and generate a multi-sheet Excel report (Batch-Uploads, Upload-Report, and Chart). *(Note: Relies on an external library like `exceljs` or `xlsx`)*.
+5. **When** the user clicks "Export Report", **the system shall** open a dialog for date range, job name, and topic, fetch the raw data (FlatBuffers), and generate a multi-sheet Excel report (Batch-Uploads, Upload-Report, and Chart) using `exceljs`.
 
 ## 3. UI/UX Design
 - **Header Actions**:
@@ -23,12 +23,13 @@ The Web-Frontend requires a "Logs" feature to display audit logs, mirroring the 
 
 ## 4. Technical Approach & Angular v22 Constraints
 - **State Management**: Use Angular Signals (`signal`, `computed`, `effect`) exclusively for component state (e.g., `logs`, `isLoading`, `autoRefresh`).
-- **Data Fetching**: Use a dedicated `@Injectable({providedIn: 'root'})` service (`AuditLogsService`) to make HTTP calls to `/api/v1/logs/audit`. Use `application/json` since the backend supports Content Negotiation.
+- **Data Fetching**: Use a dedicated `@Injectable({providedIn: 'root'})` service (`AuditLogsService`) to make HTTP calls to `/api/v1/logs/audit` with `Accept: application/x-flatbuffers`.
+- **FlatBuffers Integration**: Use `flatbuffers` npm package and generated TypeScript classes via `flatc` to parse the incoming binary payload.
 - **Components**:
   - `AuditLogsComponent` (Smart component, manages state and fetches data)
   - `AuditLogsTableComponent` (Dumb component, receives data via `input()`)
   - `ExportReportDialogComponent` (Spartan-NG Dialog for Excel report parameters)
-- **Dependencies**: For Excel export, we will need to install a library such as `xlsx` (SheetJS) or `exceljs`.
+- **Dependencies**: Install `exceljs` and `flatbuffers`.
 
 ## 5. Acceptance Criteria
 - [ ] The table successfully displays Audit Logs fetched from the backend (JSON).
