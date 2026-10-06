@@ -5,6 +5,15 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Scheduler UI**: Implemented a comprehensive Scheduler dashboard replicating the C++ client's functionality (`admin-frontend/mitm_fe_cpp/src/SchedulerWidget.cpp`).
+- **Scheduler Components**: Created `SchedulerComponent`, `SchedulerTableComponent`, and `JobEditorDialogComponent` using Spartan-NG primitives (Button, Checkbox, Table, Dialog).
+- **Auto-Refresh**: Added a toggleable 5-second polling mechanism for job states utilizing Angular Signals.
+- **Scheduler Routing**: Added lazy-loaded `/scheduler` route to the main layout navigation.
+- **Scheduler Service**: Created `SchedulerService` (`@Injectable`) to encapsulate API interactions (`GET /api/v1/jobs`, Add/Edit, Delete, Stop, Execute) and centralize `403 Forbidden` error handling for non-ADMIN actions.
+
 ## [v0.3.0] - 2026-10-05
 
 ### Changed

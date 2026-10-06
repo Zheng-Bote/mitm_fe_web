@@ -1,0 +1,88 @@
+<div hlmTableContainer>
+  <table hlmTable>
+    <caption hlmCaption>Scheduled Jobs Overview</caption>
+    
+    <thead hlmTHead>
+      <tr hlmTr>
+        <th hlmTh class="w-12">ID</th>
+        <th hlmTh>Name</th>
+        <th hlmTh>Command</th>
+        <th hlmTh>Cron Expr</th>
+        <th hlmTh>Status</th>
+        <th hlmTh>Next Run (Local)</th>
+        <th hlmTh>Active State</th>
+        <th hlmTh class="text-right">Actions</th>
+      </tr>
+    </thead>
+
+    <tbody hlmTBody>
+      @for (job of jobs(); track job.id) {
+        <tr hlmTr>
+          <td hlmTd class="font-medium w-12">{{ job.id }}</td>
+          <td hlmTd>{{ job.name }}</td>
+          <td hlmTd class="font-mono text-sm">{{ job.command }}</td>
+          <td hlmTd class="font-mono text-sm">{{ job.cron_expr }}</td>
+          
+          <td hlmTd>
+            @if (job.enabled) {
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Enabled 🟢
+              </span>
+            } @else {
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                Disabled 🔴
+              </span>
+            }
+          </td>
+
+          <td hlmTd>
+            @if (job.enabled && job.next_run) {
+              <!-- DatePipe format 'yyyy-MM-dd HH:mm:ss' formats to local timezone by default -->
+              {{ job.next_run | date:'yyyy-MM-dd HH:mm:ss' }}
+            } @else {
+              -
+            }
+          </td>
+
+          <td hlmTd>
+            @if (job.is_running) {
+              <span class="inline-flex items-center gap-1 text-blue-600 font-medium">
+                Running ⚙️
+                @if (job.active_pid) {
+                  <span class="text-xs text-gray-500">(PID {{ job.active_pid }})</span>
+                }
+              </span>
+            } @else {
+              <span class="text-gray-500">Idle</span>
+            }
+          </td>
+
+          <td hlmTd class="text-right">
+            <div class="flex items-center justify-end gap-2">
+              <button hlmBtn variant="outline" size="sm" (click)="onEdit(job)">
+                Edit
+              </button>
+              <button hlmBtn variant="destructive" size="sm" (click)="onDelete(job.name)">
+                Delete
+              </button>
+              <button hlmBtn variant="secondary" size="sm" (click)="onExecute(job.name)">
+                ▶ Execute
+              </button>
+              @if (job.is_running) {
+                <button hlmBtn variant="destructive" size="sm" (click)="onStop(job.name)">
+                  ⏹ Stop
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr hlmTr>
+          <td hlmTd colspan="8" class="text-center py-8 text-gray-500">
+            No jobs found.
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

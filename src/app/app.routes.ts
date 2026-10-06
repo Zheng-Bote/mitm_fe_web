@@ -15,6 +15,10 @@ export const routes: Routes = [
       { 
         path: 'dashboard', 
         loadComponent: () => import('./dashboard/dashboard').then(m => m.Dashboard) 
+      },
+      {
+        path: 'scheduler',
+        loadChildren: () => import('./features/scheduler/scheduler.routes')
       }
     ]
   },
