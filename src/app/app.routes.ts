@@ -19,6 +19,10 @@ export const routes: Routes = [
       {
         path: 'scheduler',
         loadChildren: () => import('./features/scheduler/scheduler.routes')
+      },
+      {
+        path: 'audit-logs',
+        loadComponent: () => import('./features/audit-logs/audit-logs.component').then(m => m.AuditLogsComponent)
       }
     ]
   },
