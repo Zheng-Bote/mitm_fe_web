@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Admin Logs UI**: Implemented Admin Audit Logs view with FlatBuffers integration and CSV export, matching the C++ client.
 - **System Logs UI**: Implemented System Logs view with FlatBuffers integration, CSV export, and auto-refresh, matching the C++ client's functionality.
 - **Audit Logs UI**: Implemented the `AuditLogsComponent` to display job audit trails, replicating the C++ client functionality.
 - **FlatBuffers Integration**: Successfully implemented native TypeScript parsing of `application/x-flatbuffers` payloads generated via `flatc`, eliminating JSON parsing overhead for large log sets.
