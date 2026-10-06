@@ -26,7 +26,8 @@
     </div>
 
     <hlm-dialog-footer>
-      <button hlmBtn (click)="onExport(ctx.closeFn)">Generate Report</button>
+      <button hlmBtn (click)="onExport(); closeBtn.click()">Generate Report</button>
+      <button #closeBtn hlmDialogClose class="hidden"></button>
     </hlm-dialog-footer>
   </hlm-dialog-content>
 </hlm-dialog>

@@ -40,13 +40,12 @@ export class ExportReportDialogComponent {
     this.startDateStr = start.toISOString().split('T')[0];
   }
 
-  onExport(closeDialogFn: () => void) {
+  onExport() {
     this.exportTriggered.emit({
       jobName: this.jobName,
       topic: this.topic,
       startDate: new Date(this.startDateStr),
       endDate: new Date(this.endDateStr)
     });
-    closeDialogFn();
   }
 }
