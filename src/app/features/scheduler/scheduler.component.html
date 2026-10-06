@@ -1,0 +1,67 @@
+<div class="flex items-center gap-4 mb-6">
+  <button hlmBtn
+    (click)="onRefresh()" 
+    [disabled]="isLoading()">
+    Refresh Jobs
+  </button>
+  
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input 
+      type="checkbox" 
+      class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+      [checked]="autoRefreshEnabled()" 
+      (change)="toggleAutoRefresh()" />
+    <span class="text-sm font-medium">Auto-Refresh (5s)</span>
+  </label>
+  
+  <div class="flex-1"></div>
+
+  <button hlmBtn variant="secondary"
+    (click)="onAddJob()">
+    + Add Job
+  </button>
+</div>
+
+@if (error()) {
+  <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <p class="text-sm text-red-700">
+          {{ error() }}
+        </p>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="bg-white shadow rounded-lg p-4">
+  @if (isLoading() && jobs().length === 0) {
+    <div class="text-center py-4 text-gray-500">Loading jobs...</div>
+  } @else {
+    <app-scheduler-table 
+      [jobs]="jobs()"
+      (edit)="onEditJob($event)"
+      (delete)="onDeleteJob($event)"
+      (stop)="onStopJob($event)"
+      (execute)="onExecuteJob($event)">
+    </app-scheduler-table>
+  }
+</div>
+
+<hlm-dialog [state]="dialogState()" (closed)="closeDialog()">
+  <hlm-dialog-content class="sm:max-w-[425px]" *brnDialogContent="let ctx">
+    <div hlmDialogHeader>
+      <h3 hlmDialogTitle>{{ selectedJob() ? 'Edit Job' : 'Add New Job' }}</h3>
+    </div>
+    <app-job-editor-dialog 
+      [job]="selectedJob()" 
+      (save)="onSaveJob($event)" 
+      (cancel)="closeDialog()">
+    </app-job-editor-dialog>
+  </hlm-dialog-content>
+</hlm-dialog>
