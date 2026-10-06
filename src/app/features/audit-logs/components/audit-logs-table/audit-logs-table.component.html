@@ -1,0 +1,30 @@
+<div hlmTableContainer>
+  <table hlmTable class="w-full">
+    <caption hlmCaption>Job Audit Logs</caption>
+    <thead hlmTHead>
+      <tr hlmTr>
+        <th hlmTh class="w-20">ID</th>
+        <th hlmTh class="w-48">Timestamp</th>
+        <th hlmTh class="w-20">Run ID</th>
+        <th hlmTh class="w-40">Component</th>
+        <th hlmTh>Message</th>
+      </tr>
+    </thead>
+    <tbody hlmTBody>
+      @for (log of logs(); track log.id) {
+        <tr hlmTr>
+          <td hlmTd class="w-20">{{ log.id }}</td>
+          <td hlmTd class="w-48">{{ log.tsUnixMs ? (log.tsUnixMs | date:'yyyy-MM-dd HH:mm:ss') : log.ts }}</td>
+          <td hlmTd class="w-20">{{ log.runId }}</td>
+          <td hlmTd class="w-40 font-medium">{{ log.component }}</td>
+          <td hlmTd class="whitespace-pre-wrap">{{ log.message }}</td>
+        </tr>
+      }
+      @if (logs().length === 0) {
+        <tr hlmTr>
+          <td hlmTd colspan="5" class="text-center p-4">No audit logs found.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

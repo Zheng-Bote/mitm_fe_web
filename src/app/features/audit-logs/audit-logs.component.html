@@ -1,0 +1,45 @@
+<div class="p-6 flex flex-col gap-6">
+  <div class="flex flex-wrap items-center gap-4">
+    <button hlmBtn variant="outline" (click)="onRefresh()" [disabled]="isLoading()">
+      Refresh Job Audits
+    </button>
+    
+    <label class="flex items-center gap-2 text-sm font-medium">
+      <input type="checkbox" [ngModel]="autoRefresh()" (ngModelChange)="autoRefresh.set($event)" class="h-4 w-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900" />
+      Auto-Refresh (5s)
+    </label>
+
+    <div class="flex items-center gap-2 border-l pl-4 ml-2">
+      <label class="flex items-center gap-2 text-sm font-medium">
+        <input type="checkbox" [ngModel]="useDateRange()" (ngModelChange)="useDateRange.set($event); useDateRange() ? fetchData() : null" class="h-4 w-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900" />
+        Filter by Date
+      </label>
+      
+      <input type="date"
+             [ngModel]="startDateStr()"
+             (ngModelChange)="startDateStr.set($event); useDateRange() ? fetchData() : null"
+             [disabled]="!useDateRange()"
+             class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50" />
+      
+      <span class="text-sm">to</span>
+      
+      <input type="date"
+             [ngModel]="endDateStr()"
+             (ngModelChange)="endDateStr.set($event); useDateRange() ? fetchData() : null"
+             [disabled]="!useDateRange()"
+             class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50" />
+    </div>
+
+    <div class="flex-grow"></div>
+    
+    <button hlmBtn variant="secondary" (click)="exportCsv()" [disabled]="logs().length === 0">
+      Export CSV
+    </button>
+    
+    <app-export-report-dialog (exportTriggered)="handleExportReport($event)"></app-export-report-dialog>
+  </div>
+
+  <div class="rounded-md border bg-card text-card-foreground shadow-sm">
+    <app-audit-logs-table [logs]="logs()"></app-audit-logs-table>
+  </div>
+</div>
