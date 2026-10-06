@@ -5,6 +5,11 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **System Logs UI**: Implemented System Logs view with FlatBuffers integration, CSV export, and auto-refresh, matching the C++ client's functionality.
+
 ## [v0.4.0] - 2026-10-06
 
 ### Added

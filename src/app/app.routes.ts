@@ -19,6 +19,10 @@ export const routes: Routes = [
       {
         path: 'scheduler',
         loadChildren: () => import('./features/scheduler/scheduler.routes')
+      },
+      {
+        path: 'system-logs',
+        loadComponent: () => import('./features/system-logs/system-logs.component').then(m => m.SystemLogsComponent)
       }
     ]
   },
