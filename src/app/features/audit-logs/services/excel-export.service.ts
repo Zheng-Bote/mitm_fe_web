@@ -152,9 +152,9 @@ export class ExcelExportService {
 
     // Adjust column widths
     [sheet1, sheet2, sheet3].forEach(sheet => {
-      sheet.columns.forEach(column => {
+      sheet.columns.forEach((column: any) => {
         let maxLength = 0;
-        column.eachCell!({ includeEmpty: true }, cell => {
+        column.eachCell!({ includeEmpty: true }, (cell: any) => {
           const columnLength = cell.value ? cell.value.toString().length : 10;
           if (columnLength > maxLength) {
             maxLength = columnLength;
