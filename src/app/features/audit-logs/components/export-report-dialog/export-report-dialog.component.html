@@ -1,0 +1,33 @@
+<hlm-dialog>
+  <button id="export-report-btn" hlmBtn hlmDialogTrigger>Export Report</button>
+  <hlm-dialog-content class="sm:max-w-[425px]" *brnDialogContent="let ctx">
+    <hlm-dialog-header>
+      <h3 hlmDialogTitle>Export Audit Report</h3>
+      <p hlmDialogDescription>Select parameters for the Excel report generation.</p>
+    </hlm-dialog-header>
+    
+    <div class="grid gap-4 py-4">
+      <div class="grid grid-cols-4 items-center gap-4">
+        <label for="jobName" class="text-right text-sm font-medium">Job Name</label>
+        <input id="jobName" [(ngModel)]="jobName" class="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" placeholder="Optional..." />
+      </div>
+      <div class="grid grid-cols-4 items-center gap-4">
+        <label for="topic" class="text-right text-sm font-medium">Topic</label>
+        <input id="topic" [(ngModel)]="topic" class="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" placeholder="Optional..." />
+      </div>
+      <div class="grid grid-cols-4 items-center gap-4">
+        <label for="startDate" class="text-right text-sm font-medium">Start Date</label>
+        <input id="startDate" type="date" [(ngModel)]="startDateStr" class="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+      </div>
+      <div class="grid grid-cols-4 items-center gap-4">
+        <label for="endDate" class="text-right text-sm font-medium">End Date</label>
+        <input id="endDate" type="date" [(ngModel)]="endDateStr" class="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+      </div>
+    </div>
+
+    <hlm-dialog-footer>
+      <button hlmBtn (click)="onExport(); closeBtn.click()">Generate Report</button>
+      <button #closeBtn hlmDialogClose class="hidden"></button>
+    </hlm-dialog-footer>
+  </hlm-dialog-content>
+</hlm-dialog>

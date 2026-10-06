@@ -23,6 +23,10 @@ export const routes: Routes = [
       {
         path: 'system-logs',
         loadComponent: () => import('./features/system-logs/system-logs.component').then(m => m.SystemLogsComponent)
+      },
+      {
+        path: 'audit-logs',
+        loadComponent: () => import('./features/audit-logs/audit-logs.component').then(m => m.AuditLogsComponent)
       }
     ]
   },

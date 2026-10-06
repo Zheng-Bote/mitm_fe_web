@@ -25,6 +25,7 @@
     "@tailwindcss/postcss": "^4.3.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "flatbuffers": "^25.9.23",
     "postcss": "^8.5.28",
