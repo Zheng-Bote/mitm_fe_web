@@ -2,6 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 
 export interface ExportReportParams {
   jobName: string;
@@ -16,7 +17,8 @@ export interface ExportReportParams {
   imports: [
     FormsModule,
     ...HlmDialogImports,
-    ...HlmButtonImports
+    ...HlmButtonImports,
+    ...BrnDialogImports
   ]
 })
 export class ExportReportDialogComponent {
@@ -38,12 +40,13 @@ export class ExportReportDialogComponent {
     this.startDateStr = start.toISOString().split('T')[0];
   }
 
-  onExport() {
+  onExport(closeDialogFn: () => void) {
     this.exportTriggered.emit({
       jobName: this.jobName,
       topic: this.topic,
       startDate: new Date(this.startDateStr),
       endDate: new Date(this.endDateStr)
     });
+    closeDialogFn();
   }
 }

@@ -1,6 +1,6 @@
 <hlm-dialog>
   <button id="export-report-btn" hlmBtn hlmDialogTrigger>Export Report</button>
-  <hlm-dialog-content class="sm:max-w-[425px]">
+  <hlm-dialog-content class="sm:max-w-[425px]" *brnDialogContent="let ctx">
     <hlm-dialog-header>
       <h3 hlmDialogTitle>Export Audit Report</h3>
       <p hlmDialogDescription>Select parameters for the Excel report generation.</p>
@@ -26,8 +26,7 @@
     </div>
 
     <hlm-dialog-footer>
-      <button hlmBtn (click)="onExport(); closeBtn.click()">Generate Report</button>
-      <button #closeBtn hlmDialogClose class="hidden"></button>
+      <button hlmBtn (click)="onExport(ctx.closeFn)">Generate Report</button>
     </hlm-dialog-footer>
   </hlm-dialog-content>
 </hlm-dialog>
