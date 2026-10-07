@@ -37,19 +37,21 @@
           <li>
             <a routerLink="/upload" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">Data Upload</a>
           </li>
+          <li>
+            <a routerLink="/system-logs" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">System Logs</a>
+          </li>
         }
-        <li>
-          <a routerLink="/system-logs" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">System Logs</a>
-        </li>
         <li>
           <a routerLink="/audit-logs" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">Audit Logs</a>
         </li>
-        <li>
-          <a routerLink="/admin-logs" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">Admin Logs</a>
-        </li>
-        <li>
-          <a routerLink="/settings" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">Settings</a>
-        </li>
+        @if (authService.roles().includes('ADMIN')) {
+          <li>
+            <a routerLink="/admin-logs" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">Admin Logs</a>
+          </li>
+          <li>
+            <a routerLink="/settings" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">Settings</a>
+          </li>
+        }
       </ul>
     </nav>
   </aside>
