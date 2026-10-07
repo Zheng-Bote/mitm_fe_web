@@ -57,7 +57,8 @@ export class AuthService {
     
     return this.http.get<{ roles: string[], os_user: string }>(`/api/v1/auth/me`).pipe(
       tap(response => {
-        this._roles.set(response.roles || []);
+        const uppercaseRoles = (response.roles || []).map(r => r.toUpperCase());
+        this._roles.set(uppercaseRoles);
         if (response.os_user) {
           this._osUser.set(response.os_user);
         }
@@ -68,6 +69,25 @@ export class AuthService {
         return of([]);
       })
     );
+  }
+
+  /**
+   * Check if user has a role, accounting for hierarchy:
+   * ADMIN inherits USER inherits VIEWER
+   */
+  public hasRole(requiredRole: string): boolean {
+    const roles = this._roles();
+    const req = requiredRole.toUpperCase();
+    
+    if (roles.includes('ADMIN')) {
+      return true; // ADMIN can do anything
+    }
+    
+    if (roles.includes('USER') && (req === 'USER' || req === 'VIEWER')) {
+      return true; // USER can do USER and VIEWER things
+    }
+    
+    return roles.includes(req);
   }
 
   /**

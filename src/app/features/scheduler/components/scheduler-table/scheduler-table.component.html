@@ -59,7 +59,7 @@
 
           <td hlmTd class="text-right">
             <div class="flex items-center justify-end gap-2">
-              @if (authService.roles().includes('ADMIN')) {
+              @if (authService.hasRole('ADMIN')) {
                 <button hlmBtn variant="outline" size="sm" (click)="onEdit(job)">
                   Edit
                 </button>
@@ -68,18 +68,16 @@
                 </button>
               }
 
-              @if (authService.roles().includes('ADMIN') || authService.roles().includes('USER')) {
+              @if (authService.hasRole('USER')) {
                 <button hlmBtn variant="secondary" size="sm" (click)="onExecute(job.name)">
                   ▶ Execute
                 </button>
-                @if (job.is_running) {
-                  <button hlmBtn variant="destructive" size="sm" (click)="onStop(job.name)">
-                    ⏹ Stop
-                  </button>
-                }
+                <button hlmBtn variant="destructive" size="sm" (click)="onStop(job.name)" [disabled]="!job.is_running">
+                  ⏹ Stop
+                </button>
               }
 
-              @if (!authService.roles().includes('ADMIN') && !authService.roles().includes('USER')) {
+              @if (!authService.hasRole('USER')) {
                 <span class="text-muted-foreground text-sm">No actions</span>
               }
             </div>

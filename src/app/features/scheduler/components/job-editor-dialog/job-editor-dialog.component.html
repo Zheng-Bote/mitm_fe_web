@@ -1,31 +1,22 @@
 <form [formGroup]="form" (ngSubmit)="onSave()" class="space-y-4">
-  
+
   <div class="flex flex-col gap-1.5">
     <label class="text-sm font-medium leading-none" for="name">Job Name</label>
-    <input 
-      id="name" 
-      type="text" 
-      formControlName="name" 
+    <input id="name" type="text" formControlName="name"
       class="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
       placeholder="e.g. backup-job" />
   </div>
 
   <div class="flex flex-col gap-1.5">
     <label class="text-sm font-medium leading-none" for="command">Command</label>
-    <input 
-      id="command" 
-      type="text" 
-      formControlName="command" 
+    <input id="command" type="text" formControlName="command"
       class="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      placeholder="/bin/sh -c 'echo hello'" />
+      placeholder="mitm-collector-pg" />
   </div>
 
   <div class="flex flex-col gap-1.5">
     <label class="text-sm font-medium leading-none" for="cron_expr">Cron Expression</label>
-    <input 
-      id="cron_expr" 
-      type="text" 
-      formControlName="cron_expr" 
+    <input id="cron_expr" type="text" formControlName="cron_expr"
       class="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
       placeholder="*/5 * * * *" />
   </div>

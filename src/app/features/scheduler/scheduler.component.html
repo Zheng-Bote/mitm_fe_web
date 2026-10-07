@@ -16,7 +16,7 @@
   
   <div class="flex-1"></div>
 
-  @if (authService.roles().includes('ADMIN')) {
+  @if (authService.hasRole('ADMIN')) {
     <button hlmBtn variant="secondary"
       (click)="onAddJob()">
       + Add Job

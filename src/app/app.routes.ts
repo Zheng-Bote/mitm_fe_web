@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { roleGuard } from './core/auth/role.guard';
 
 export const routes: Routes = [
   { 
@@ -22,7 +23,9 @@ export const routes: Routes = [
       },
       {
         path: 'system-logs',
-        loadComponent: () => import('./features/system-logs/system-logs.component').then(m => m.SystemLogsComponent)
+        loadComponent: () => import('./features/system-logs/system-logs.component').then(m => m.SystemLogsComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'USER'] }
       },
       {
         path: 'audit-logs',
@@ -30,7 +33,15 @@ export const routes: Routes = [
       },
       {
         path: 'admin-logs',
-        loadComponent: () => import('./features/admin-logs/admin-logs.component').then(m => m.AdminLogsComponent)
+        loadComponent: () => import('./features/admin-logs/admin-logs.component').then(m => m.AdminLogsComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] }
+      },
+      {
+        path: 'upload',
+        loadComponent: () => import('./features/upload/upload.component').then(m => m.UploadComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'USER'] }
       }
     ]
   },
