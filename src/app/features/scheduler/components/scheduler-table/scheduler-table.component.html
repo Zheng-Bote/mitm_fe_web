@@ -25,11 +25,11 @@
           
           <td hlmTd>
             @if (job.enabled) {
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-700 dark:text-green-400">
                 Enabled 🟢
               </span>
             } @else {
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-destructive/20 text-destructive">
                 Disabled 🔴
               </span>
             }
@@ -46,14 +46,14 @@
 
           <td hlmTd>
             @if (job.is_running) {
-              <span class="inline-flex items-center gap-1 text-blue-600 font-medium">
+              <span class="inline-flex items-center gap-1 text-primary font-medium">
                 Running ⚙️
                 @if (job.active_pid) {
-                  <span class="text-xs text-gray-500">(PID {{ job.active_pid }})</span>
+                  <span class="text-xs text-muted-foreground">(PID {{ job.active_pid }})</span>
                 }
               </span>
             } @else {
-              <span class="text-gray-500">Idle</span>
+              <span class="text-muted-foreground">Idle</span>
             }
           </td>
 
@@ -80,14 +80,14 @@
               }
 
               @if (!authService.roles().includes('ADMIN') && !authService.roles().includes('USER')) {
-                <span class="text-gray-400 text-sm">No actions</span>
+                <span class="text-muted-foreground text-sm">No actions</span>
               }
             </div>
           </td>
         </tr>
       } @empty {
         <tr hlmTr>
-          <td hlmTd colspan="8" class="text-center py-8 text-gray-500">
+          <td hlmTd colspan="8" class="text-center py-8 text-muted-foreground">
             No jobs found.
           </td>
         </tr>

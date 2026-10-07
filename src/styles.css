@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;500&display=swap');
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/preflight.css' layer(base);
@@ -89,5 +90,45 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+:root.tron {
+  color-scheme: dark;
+  --tron-cyan: oklch(0.75 0.18 210);
+  --tron-glow: oklch(0.75 0.18 210 / 0.3);
+  --ob-white: oklch(0.98 0.01 210);
+  --ob-glass: oklch(1 0 0 / 0.04);
+  
+  --background: #000206;
+  --foreground: var(--ob-white);
+  --primary: var(--tron-cyan);
+  --primary-foreground: #000;
+  --card: var(--ob-glass);
+  --card-foreground: var(--ob-white);
+  --popover: var(--ob-glass);
+  --popover-foreground: var(--ob-white);
+  --border: var(--tron-glow);
+  --input: var(--tron-glow);
+  --ring: var(--tron-cyan);
+}
+
+.tron body {
+  background-image: linear-gradient(var(--tron-glow) 1px, transparent 1px),
+    linear-gradient(90deg, var(--tron-glow) 1px, transparent 1px);
+  background-size: 60px 60px;
+  background-attachment: fixed;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.tron h1, .tron h2, .tron h3, .tron .font-tron {
+  font-family: "Orbitron", sans-serif;
+  color: var(--tron-cyan);
+}
+
+
+@layer utilities {
+  .font-tron {
+    font-family: "Orbitron", sans-serif;
   }
 }
