@@ -59,19 +59,28 @@
 
           <td hlmTd class="text-right">
             <div class="flex items-center justify-end gap-2">
-              <button hlmBtn variant="outline" size="sm" (click)="onEdit(job)">
-                Edit
-              </button>
-              <button hlmBtn variant="destructive" size="sm" (click)="onDelete(job.name)">
-                Delete
-              </button>
-              <button hlmBtn variant="secondary" size="sm" (click)="onExecute(job.name)">
-                ▶ Execute
-              </button>
-              @if (job.is_running) {
-                <button hlmBtn variant="destructive" size="sm" (click)="onStop(job.name)">
-                  ⏹ Stop
+              @if (authService.roles().includes('ADMIN')) {
+                <button hlmBtn variant="outline" size="sm" (click)="onEdit(job)">
+                  Edit
                 </button>
+                <button hlmBtn variant="destructive" size="sm" (click)="onDelete(job.name)">
+                  Delete
+                </button>
+              }
+
+              @if (authService.roles().includes('ADMIN') || authService.roles().includes('USER')) {
+                <button hlmBtn variant="secondary" size="sm" (click)="onExecute(job.name)">
+                  ▶ Execute
+                </button>
+                @if (job.is_running) {
+                  <button hlmBtn variant="destructive" size="sm" (click)="onStop(job.name)">
+                    ⏹ Stop
+                  </button>
+                }
+              }
+
+              @if (!authService.roles().includes('ADMIN') && !authService.roles().includes('USER')) {
+                <span class="text-gray-400 text-sm">No actions</span>
               }
             </div>
           </td>

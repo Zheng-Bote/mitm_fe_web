@@ -1,11 +1,12 @@
 // SPDX-FileCopyrightText: 2026 ZHENG Robert
 // SPDX-License-Identifier: Apache-2.0
 
-import { Component, input, output, computed } from '@angular/core';
+import { Component, input, output, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Job } from '../../models/job.model';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-scheduler-table',
@@ -16,6 +17,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
   }
 })
 export class SchedulerTableComponent {
+  readonly authService = inject(AuthService);
   jobs = input<Job[]>([]);
   
   edit = output<Job>();

@@ -19,10 +19,12 @@ export class AuthService {
   // State via Angular Signals
   private readonly _sessionToken = signal<string | null>(sessionStorage.getItem('mitm_session_token'));
   private readonly _roles = signal<string[]>([]);
+  private readonly _osUser = signal<string | null>(null);
 
   // Computed properties
   public sessionToken = computed(() => this._sessionToken());
   public roles = computed(() => this._roles());
+  public osUser = computed(() => this._osUser());
   public isAuthenticated = computed(() => !!this._sessionToken());
 
   constructor() { }
@@ -53,11 +55,14 @@ export class AuthService {
       return of([]);
     }
     
-    return this.http.get<{ roles: string[] }>(`/api/v1/auth/me`).pipe(
-      map(response => response.roles || []),
-      tap(roles => {
-        this._roles.set(roles);
+    return this.http.get<{ roles: string[], os_user: string }>(`/api/v1/auth/me`).pipe(
+      tap(response => {
+        this._roles.set(response.roles || []);
+        if (response.os_user) {
+          this._osUser.set(response.os_user);
+        }
       }),
+      map(response => response.roles || []),
       catchError(err => {
         console.error('Failed to fetch roles', err);
         return of([]);
@@ -71,6 +76,7 @@ export class AuthService {
   logout(): void {
     this._sessionToken.set(null);
     this._roles.set([]);
+    this._osUser.set(null);
     sessionStorage.removeItem('mitm_session_token');
     this.router.navigate(['/login']);
   }
