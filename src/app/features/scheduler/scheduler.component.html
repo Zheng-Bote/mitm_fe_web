@@ -41,9 +41,9 @@
   </div>
 }
 
-<div class="bg-white shadow rounded-lg p-4">
+<div class="bg-card text-card-foreground shadow rounded-lg p-4 border border-border">
   @if (isLoading() && jobs().length === 0) {
-    <div class="text-center py-4 text-gray-500">Loading jobs...</div>
+    <div class="text-center py-4 text-muted-foreground">Loading jobs...</div>
   } @else {
     <app-scheduler-table 
       [jobs]="jobs()"
