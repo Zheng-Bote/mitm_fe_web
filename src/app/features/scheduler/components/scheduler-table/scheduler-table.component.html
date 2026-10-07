@@ -72,11 +72,9 @@
                 <button hlmBtn variant="secondary" size="sm" (click)="onExecute(job.name)">
                   ▶ Execute
                 </button>
-                @if (job.is_running) {
-                  <button hlmBtn variant="destructive" size="sm" (click)="onStop(job.name)">
-                    ⏹ Stop
-                  </button>
-                }
+                <button hlmBtn variant="destructive" size="sm" (click)="onStop(job.name)" [disabled]="!job.is_running">
+                  ⏹ Stop
+                </button>
               }
 
               @if (!authService.roles().includes('ADMIN') && !authService.roles().includes('USER')) {
