@@ -31,6 +31,10 @@ export const routes: Routes = [
       {
         path: 'admin-logs',
         loadComponent: () => import('./features/admin-logs/admin-logs.component').then(m => m.AdminLogsComponent)
+      },
+      {
+        path: 'upload',
+        loadComponent: () => import('./features/upload/upload.component').then(m => m.UploadComponent)
       }
     ]
   },

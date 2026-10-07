@@ -33,6 +33,11 @@
         <li>
           <a routerLink="/scheduler" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">Scheduler</a>
         </li>
+        @if (authService.roles().includes('ADMIN') || authService.roles().includes('USER')) {
+          <li>
+            <a routerLink="/upload" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">Data Upload</a>
+          </li>
+        }
         <li>
           <a routerLink="/system-logs" routerLinkActive="!bg-primary !text-primary-foreground" class="block px-4 py-2 border border-border rounded font-tron text-sm transition hover:bg-border/50 text-center lg:text-left min-w-[110px] lg:min-w-0">System Logs</a>
         </li>
