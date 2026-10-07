@@ -10,6 +10,8 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { JobEditorDialogComponent } from './components/job-editor-dialog/job-editor-dialog.component';
 
+import { AuthService } from '../../core/auth/auth.service';
+
 @Component({
   selector: 'app-scheduler',
   templateUrl: './scheduler.component.html',
@@ -20,6 +22,7 @@ import { JobEditorDialogComponent } from './components/job-editor-dialog/job-edi
 })
 export class SchedulerComponent implements OnDestroy {
   readonly schedulerService = inject(SchedulerService);
+  readonly authService = inject(AuthService);
   
   readonly jobs = this.schedulerService.jobs;
   readonly isLoading = this.schedulerService.isLoading;

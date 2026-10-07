@@ -16,10 +16,12 @@
   
   <div class="flex-1"></div>
 
-  <button hlmBtn variant="secondary"
-    (click)="onAddJob()">
-    + Add Job
-  </button>
+  @if (authService.roles().includes('ADMIN')) {
+    <button hlmBtn variant="secondary"
+      (click)="onAddJob()">
+      + Add Job
+    </button>
+  }
 </div>
 
 @if (error()) {
