@@ -13,3 +13,8 @@ Owns:
 Must:
   Communicate securely via HTTPS with the core-layer REST API.
   Provide responsive design suitable for desktop and tablet usage.
+
+Must:
+  The frontend must automatically renew active sessions in the background (e.g. every 30 minutes) to prevent premature timeouts during active use.
+  The frontend must explicitly check for and gracefully parse backend JSON:API error messages for rejected logins (e.g., inactive users).
+  The authentication flow must retrieve the client's public IP (e.g., via ipify) and pass it to the backend as `client_ip`.
