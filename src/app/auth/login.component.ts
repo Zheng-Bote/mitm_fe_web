@@ -104,7 +104,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-        const detail = err?.error?.errors?.[0]?.detail || err?.error?.message;
+        const detail = typeof err?.error === 'string' ? err.error : (err?.error?.errors?.[0]?.detail || err?.error?.message);
         if (detail && detail.toLowerCase().includes('inactive')) {
           this.errorMessage.set('Login Rejected: User account is inactive.');
         } else {
