@@ -38,6 +38,12 @@ export const routes: Routes = [
         data: { roles: ['ADMIN'] }
       },
       {
+        path: 'rbac',
+        loadComponent: () => import('./features/rbac/rbac.component').then(m => m.RbacComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN'] }
+      },
+      {
         path: 'upload',
         loadComponent: () => import('./features/upload/upload.component').then(m => m.UploadComponent),
         canActivate: [roleGuard],
