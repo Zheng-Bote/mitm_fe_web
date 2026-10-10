@@ -1,13 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [ReactiveFormsModule],
   template: `
     <div class="flex min-h-screen items-center justify-center bg-background text-foreground px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div class="w-full max-w-md space-y-8 bg-card text-card-foreground p-8 rounded-xl shadow-md border border-border transition-colors duration-300">
@@ -21,16 +19,15 @@ import { AuthService } from '../core/auth/auth.service';
           </p>
         </div>
         
-        <form class="mt-8 space-y-6" (ngSubmit)="onSubmit()" #loginForm="ngForm">
+        <form class="mt-8 space-y-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <div class="-space-y-px rounded-md shadow-sm">
             <div>
               <label for="os-user" class="sr-only">OS Username</label>
               <input
                 id="os-user"
-                name="osUser"
+                formControlName="osUser"
                 type="text"
                 required
-                [(ngModel)]="osUser"
                 class="relative block w-full rounded-md border border-border bg-background py-2.5 px-3 text-foreground placeholder:text-muted-foreground focus:z-10 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                 placeholder="Enter Username (e.g., PY123456)"
               />
@@ -38,18 +35,23 @@ import { AuthService } from '../core/auth/auth.service';
           </div>
 
           <!-- Error message display -->
-          <div *ngIf="errorMessage()" class="text-red-500 text-sm text-center">
-            {{ errorMessage() }}
-          </div>
+          @if (errorMessage()) {
+            <div class="text-red-500 text-sm text-center">
+              {{ errorMessage() }}
+            </div>
+          }
 
           <div>
             <button
               type="submit"
-              [disabled]="isLoading() || !osUser()"
+              [disabled]="isLoading() || loginForm.invalid"
               class="group relative flex w-full justify-center rounded-md bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <span *ngIf="isLoading()">Authenticating...</span>
-              <span *ngIf="!isLoading()">Sign In</span>
+              @if (isLoading()) {
+                <span>Authenticating...</span>
+              } @else {
+                <span>Sign In</span>
+              }
             </button>
           </div>
         </form>
@@ -60,8 +62,12 @@ import { AuthService } from '../core/auth/auth.service';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private fb = inject(FormBuilder);
 
-  osUser = signal<string>('');
+  loginForm = this.fb.group({
+    osUser: ['', Validators.required]
+  });
+
   isLoading = signal<boolean>(false);
   errorMessage = signal<string>('');
   webAuthnAvailable = signal<boolean>(false);
@@ -74,75 +80,17 @@ export class LoginComponent {
   }
 
   async onSubmit() {
-    if (!this.osUser()) return;
+    if (this.loginForm.invalid) return;
 
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    // Optional WebAuthn / Windows Hello enforcement for extra local security
-    //    if (this.webAuthnAvailable()) {
-    //      try {
-    //        await this.triggerWebAuthn();
-    //      } catch (err: any) {
-    //        if (err.name === 'NotAllowedError') {
-    //          this.isLoading.set(false);
-    //          this.errorMessage.set('Windows Hello authentication was cancelled.');
-    //          return; // Block login ONLY if user actively cancels
-    //        }
-    //        console.warn('WebAuthn failed or not supported by browser, falling back to direct login.', err);
-    //        // Do NOT return here. Proceed with login as fallback.
-    //      }
-    //    }
-
     this.proceedWithLogin();
   }
 
-  private async triggerWebAuthn(): Promise<void> {
-    const challenge = new Uint8Array(32);
-    window.crypto.getRandomValues(challenge);
-
-    try {
-      // 1. Try to authenticate with an existing local passkey
-      await navigator.credentials.get({
-        publicKey: {
-          challenge: challenge,
-          userVerification: "required",
-          timeout: 60000
-        }
-      });
-    } catch (err: any) {
-      if (err.name === 'NotAllowedError') {
-        throw err; // User actively cancelled the prompt
-      }
-
-      // 2. If no passkey exists on this device yet, register a local dummy passkey
-      // to trigger Windows Hello / TouchID setup for this domain
-      const userId = new Uint8Array(16);
-      window.crypto.getRandomValues(userId);
-
-      await navigator.credentials.create({
-        publicKey: {
-          challenge: challenge,
-          rp: { name: "MitM Admin Control Plane", id: window.location.hostname },
-          user: {
-            id: userId,
-            name: this.osUser(),
-            displayName: this.osUser()
-          },
-          pubKeyCredParams: [{ type: "public-key", alg: -7 }, { type: "public-key", alg: -257 }],
-          authenticatorSelection: {
-            authenticatorAttachment: "platform",
-            userVerification: "required",
-            residentKey: "required"
-          },
-          timeout: 60000
-        }
-      });
-    }
-  }
-
   private proceedWithLogin() {
-    this.authService.login(this.osUser()).subscribe({
+    const osUser = this.loginForm.value.osUser!;
+    this.authService.login(osUser).subscribe({
       next: () => {
         this.authService.fetchRoles().subscribe({
           next: () => {
@@ -156,7 +104,12 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.error?.message || 'Authentication failed. Please check your username.');
+        const detail = err?.error?.errors?.[0]?.detail || err?.error?.message;
+        if (detail && detail.toLowerCase().includes('inactive')) {
+          this.errorMessage.set('Login Rejected: User account is inactive.');
+        } else {
+          this.errorMessage.set(detail || 'Authentication failed. Please check your username.');
+        }
       }
     });
   }

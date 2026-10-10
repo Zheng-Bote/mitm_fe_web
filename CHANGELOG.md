@@ -5,6 +5,13 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.0] - 2026-10-10
+
+### Added
+- **RBAC UI**: Implemented RBAC user management view with Spartan-NG, parity with C++ frontend.
+- **Session Management**: Added 30-minute background session renewal and IPify integration for `client_ip`.
+- **Authentication**: Login now rejects inactive users and parses inactive account error messages.
+
 ## [0.5.0] - 2026-10-07
 
 ### Added

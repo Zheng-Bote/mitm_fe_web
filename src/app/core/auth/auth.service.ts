@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap, catchError, map } from 'rxjs/operators';
+import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { Observable, throwError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -27,24 +27,58 @@ export class AuthService {
   public osUser = computed(() => this._osUser());
   public isAuthenticated = computed(() => !!this._sessionToken());
 
-  constructor() { }
+  private renewalTimer: any;
+
+  constructor() {
+    if (this._sessionToken()) {
+      this.startSessionRenewal();
+    }
+  }
 
   /**
    * Logs in by requesting a session token from the backend.
    */
   login(osUser: string): Observable<SessionResponse> {
-    const payload = {
-      os_user: osUser
-    };
-    
-    return this.http.post<SessionResponse>(`/api/v1/auth/session`, payload).pipe(
-      tap(response => {
-        if (response && response.session_token) {
-          this._sessionToken.set(response.session_token);
-          sessionStorage.setItem('mitm_session_token', response.session_token);
-        }
+    return this.http.get<{ip: string}>('https://api64.ipify.org?format=json').pipe(
+      catchError(() => of({ ip: '127.0.0.1' })),
+      switchMap(ipResponse => {
+        const payload = {
+          os_user: osUser,
+          client_ip: ipResponse.ip
+        };
+        
+        return this.http.post<SessionResponse>(`/api/v1/auth/session`, payload).pipe(
+          tap(response => {
+            if (response && response.session_token) {
+              this._sessionToken.set(response.session_token);
+              sessionStorage.setItem('mitm_session_token', response.session_token);
+              this.startSessionRenewal();
+            }
+          })
+        );
       })
     );
+  }
+
+  private startSessionRenewal() {
+    this.stopSessionRenewal();
+    this.renewalTimer = setInterval(() => {
+      this.fetchRoles().subscribe({
+        next: (roles) => {
+          if (roles.length === 0) {
+            this.logout();
+          }
+        },
+        error: () => this.logout()
+      });
+    }, 1800000); // 30 minutes
+  }
+
+  private stopSessionRenewal() {
+    if (this.renewalTimer) {
+      clearInterval(this.renewalTimer);
+      this.renewalTimer = null;
+    }
   }
 
   /**
@@ -94,6 +128,7 @@ export class AuthService {
    * Clears the session state and redirects to login.
    */
   logout(): void {
+    this.stopSessionRenewal();
     this._sessionToken.set(null);
     this._roles.set([]);
     this._osUser.set(null);
