@@ -5,7 +5,7 @@ import { User, Role } from '../models/user.model';
 import { Service } from '@angular/core';
 
 @Service({
-  providedIn: 'root'
+  autoProvided: true
 })
 export class RbacService {
   private http = inject(HttpClient);

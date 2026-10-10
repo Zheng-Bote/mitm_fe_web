@@ -87,7 +87,7 @@ export class UserEditorDialogComponent implements OnInit {
   save() {
     if (this.form.invalid) return;
 
-    const val = this.form.value;
+    const val = this.form.value as Partial<User>;
     const u = this.user();
 
     if (u) {
