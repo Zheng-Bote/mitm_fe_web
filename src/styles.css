@@ -108,6 +108,12 @@
   --card-foreground: var(--ob-white);
   --popover: var(--ob-glass);
   --popover-foreground: var(--ob-white);
+  --secondary: oklch(0.22 0.03 230);
+  --secondary-foreground: var(--ob-white);
+  --muted: oklch(0.22 0.03 230);
+  --muted-foreground: oklch(0.75 0.05 210);
+  --accent: var(--tron-glow);
+  --accent-foreground: var(--ob-white);
   --border: var(--tron-glow);
   --input: var(--tron-glow);
   --ring: var(--tron-cyan);
