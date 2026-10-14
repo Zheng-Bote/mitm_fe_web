@@ -5,6 +5,17 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **BREAKING – Passkey Login (WebAuthn)**: Sign-in now uses the WebAuthn passkey ceremony via `@simplewebauthn/browser` (Windows Hello, security keys, phones). The username-only login against `POST /api/v1/auth/session` (removed in core-layer `mitm_http-server` 2.0.0) is gone. Requires core-layer 2.0.0.
+- **Registration**: New "Register" view (username, name, department) for passkey registration; new users stay inactive until approved. On a fresh installation the view asks for the bootstrap token (`INITIAL_ADMIN_TOKEN`) and signs the initial administrator in.
+- **Login UI**: Sign-in and registration views use Spartan-NG tabs, field, label and input components.
+- **Error Messages**: Cancelled passkey prompts, rate limiting (`429`), inactive accounts and other backend JSON:API errors are shown as readable messages.
+
+### Removed
+- **IPify Integration**: The client no longer requests its public IP from `api64.ipify.org` or sends `client_ip`; the backend determines the client IP.
+
 ## [v1.3.0] - 2026-10-10
 
 ### Added

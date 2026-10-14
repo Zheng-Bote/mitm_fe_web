@@ -2,11 +2,43 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap, catchError, map, switchMap } from 'rxjs/operators';
-import { Observable, throwError, of } from 'rxjs';
+import { Observable, throwError, of, from } from 'rxjs';
+import {
+  startAuthentication,
+  startRegistration,
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+} from '@simplewebauthn/browser';
 import { environment } from '../../../environments/environment';
 
 export interface SessionResponse {
   session_token: string;
+}
+
+/** webauthn-rs wraps the WebAuthn options in a `publicKey` member. */
+interface LoginStartResponse {
+  ceremony_id: string;
+  public_key_options: { publicKey: PublicKeyCredentialRequestOptionsJSON };
+}
+
+interface RegistrationStartResponse {
+  ceremony_id: string;
+  public_key_options: { publicKey: PublicKeyCredentialCreationOptionsJSON };
+  is_bootstrap: boolean;
+}
+
+export interface RegistrationRequest {
+  username: string;
+  first_name?: string;
+  last_name?: string;
+  department?: string;
+  bootstrap_token?: string;
+}
+
+export interface RegistrationResult {
+  status: 'active' | 'pending_approval';
+  message: string;
+  session_token?: string;
 }
 
 @Injectable({
@@ -36,28 +68,63 @@ export class AuthService {
   }
 
   /**
-   * Logs in by requesting a session token from the backend.
+   * Returns whether the system has no user yet and needs the initial administrator registration.
    */
-  login(osUser: string): Observable<SessionResponse> {
-    return this.http.get<{ip: string}>('https://api64.ipify.org?format=json').pipe(
-      catchError(() => of({ ip: '127.0.0.1' })),
-      switchMap(ipResponse => {
-        const payload = {
-          os_user: osUser,
-          client_ip: ipResponse.ip
-        };
-        
-        return this.http.post<SessionResponse>(`/api/v1/auth/session`, payload).pipe(
-          tap(response => {
-            if (response && response.session_token) {
-              this._sessionToken.set(response.session_token);
-              sessionStorage.setItem('mitm_session_token', response.session_token);
-              this.startSessionRenewal();
-            }
-          })
-        );
+  bootstrapRequired(): Observable<boolean> {
+    return this.http.get<{ bootstrap_required: boolean }>(`/api/v1/auth/bootstrap/status`).pipe(
+      map(response => response.bootstrap_required)
+    );
+  }
+
+  /**
+   * Logs in via the WebAuthn passkey ceremony; the backend issues the session token
+   * only after verifying the passkey signature.
+   */
+  loginWithPasskey(username: string): Observable<SessionResponse> {
+    return this.http.post<LoginStartResponse>(`/api/v1/auth/webauthn/login/start`, { username }).pipe(
+      switchMap(start =>
+        from(startAuthentication({ optionsJSON: start.public_key_options.publicKey })).pipe(
+          switchMap(credential =>
+            this.http.post<SessionResponse>(`/api/v1/auth/webauthn/login/finish`, {
+              ceremony_id: start.ceremony_id,
+              credential
+            })
+          )
+        )
+      ),
+      tap(response => this.setSession(response.session_token))
+    );
+  }
+
+  /**
+   * Registers a passkey. New users stay inactive until approved; the bootstrap
+   * administrator is signed in immediately.
+   */
+  registerPasskey(request: RegistrationRequest): Observable<RegistrationResult> {
+    return this.http.post<RegistrationStartResponse>(`/api/v1/auth/webauthn/register/start`, request).pipe(
+      switchMap(start =>
+        from(startRegistration({ optionsJSON: start.public_key_options.publicKey })).pipe(
+          switchMap(credential =>
+            this.http.post<RegistrationResult>(`/api/v1/auth/webauthn/register/finish`, {
+              ceremony_id: start.ceremony_id,
+              credential,
+              attachment_type: credential.authenticatorAttachment
+            })
+          )
+        )
+      ),
+      tap(result => {
+        if (result.session_token) {
+          this.setSession(result.session_token);
+        }
       })
     );
+  }
+
+  private setSession(token: string) {
+    this._sessionToken.set(token);
+    sessionStorage.setItem('mitm_session_token', token);
+    this.startSessionRenewal();
   }
 
   private startSessionRenewal() {
