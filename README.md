@@ -15,6 +15,7 @@ This project strictly adheres to a **Feature-Based Directory Structure**.
 - **Audit Logs**: Job execution audit trails with Excel export (via FlatBuffers for high performance).
 - **System Logs**: System event logging with CSV export and real-time auto-refresh.
 - **Admin Logs**: Admin action audit trails with CSV export.
+- **Passkey Login**: Sign-in and registration via WebAuthn (`@simplewebauthn/browser`), including the initial administrator bootstrap.
 
 ## Development server
 
@@ -25,6 +26,17 @@ ng serve
 ```
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+### Passkey login (WebAuthn) in development
+
+The browser binds passkeys to the page origin, so the core-layer must accept the dev server's origin. Start `mitm_http-server` with:
+
+```bash
+WEBAUTHN_RP_ID=localhost
+WEBAUTHN_RP_ORIGIN=http://localhost:4200
+```
+
+`localhost` counts as a secure context, so HTTPS is not required locally. In production the frontend is served by `mitm_http-server` from the same domain; set `WEBAUTHN_RP_ID` / `WEBAUTHN_RP_ORIGIN` to that domain (e.g. `mitm.example.com` / `https://mitm.example.com`). Passkeys are bound to the RP ID: changing it invalidates previously registered passkeys.
 
 ## Code scaffolding
 
