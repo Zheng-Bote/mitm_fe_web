@@ -5,7 +5,16 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v1.5.0] - 2026-10-19
+
+### Added
+- **User Settings Dialog**: Added a read-only User Settings modal triggered from the footer (`USER_SETTINGS`) displaying the signed-in user's Login ID (`os_user`), Name (`<Lastname>, <Firstname>`), Department, and assigned Roles.
+
+### Changed
+- **Footer Version Display**: Replaced the static `SOURCE: MCP_v2` label in the layout footer with the dynamic application version read from `package.json` (`VERSION: 1.5.0`).
+- **Footer User Settings Trigger**: Replaced the static `CLEARANCE_LEVEL: 5` footer text with the `USER_SETTINGS` button.
+
+## [v1.4.0] - 2026-10-14
 
 ### Changed
 - **BREAKING – Passkey Login (WebAuthn)**: Sign-in now uses the WebAuthn passkey ceremony via `@simplewebauthn/browser` (Windows Hello, security keys, phones). The username-only login against `POST /api/v1/auth/session` (removed in core-layer `mitm_http-server` 2.0.0) is gone. Requires core-layer 2.0.0.

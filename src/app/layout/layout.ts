@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../core/auth/auth.service';
+import packageJson from '../../../package.json';
 
 @Component({
   imports: [RouterModule],
@@ -11,6 +12,8 @@ import { AuthService } from '../core/auth/auth.service';
 export class Layout implements OnInit {
   public authService = inject(AuthService);
   public currentTheme = signal<string>('light');
+  public appVersion = packageJson.version;
+  public showUserSettings = signal<boolean>(false);
 
   ngOnInit() {
     const savedTheme = localStorage.getItem('mitm_theme') || 'light';
@@ -32,6 +35,14 @@ export class Layout implements OnInit {
     if (theme !== 'light') {
       html.classList.add(theme);
     }
+  }
+
+  openUserSettings() {
+    this.showUserSettings.set(true);
+  }
+
+  closeUserSettings() {
+    this.showUserSettings.set(false);
   }
 
   logout() {

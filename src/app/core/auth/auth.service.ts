@@ -52,11 +52,17 @@ export class AuthService {
   private readonly _sessionToken = signal<string | null>(sessionStorage.getItem('mitm_session_token'));
   private readonly _roles = signal<string[]>([]);
   private readonly _osUser = signal<string | null>(null);
+  private readonly _firstName = signal<string | null>(null);
+  private readonly _lastName = signal<string | null>(null);
+  private readonly _department = signal<string | null>(null);
 
   // Computed properties
   public sessionToken = computed(() => this._sessionToken());
   public roles = computed(() => this._roles());
   public osUser = computed(() => this._osUser());
+  public firstName = computed(() => this._firstName());
+  public lastName = computed(() => this._lastName());
+  public department = computed(() => this._department());
   public isAuthenticated = computed(() => !!this._sessionToken());
 
   private renewalTimer: any;
@@ -156,13 +162,16 @@ export class AuthService {
       return of([]);
     }
     
-    return this.http.get<{ roles: string[], os_user: string }>(`/api/v1/auth/me`).pipe(
+    return this.http.get<{ roles: string[], os_user: string, first_name?: string | null, last_name?: string | null, department?: string | null }>(`/api/v1/auth/me`).pipe(
       tap(response => {
         const uppercaseRoles = (response.roles || []).map(r => r.toUpperCase());
         this._roles.set(uppercaseRoles);
         if (response.os_user) {
           this._osUser.set(response.os_user);
         }
+        this._firstName.set(response.first_name ?? null);
+        this._lastName.set(response.last_name ?? null);
+        this._department.set(response.department ?? null);
       }),
       map(response => response.roles || []),
       catchError(err => {
@@ -199,6 +208,9 @@ export class AuthService {
     this._sessionToken.set(null);
     this._roles.set([]);
     this._osUser.set(null);
+    this._firstName.set(null);
+    this._lastName.set(null);
+    this._department.set(null);
     sessionStorage.removeItem('mitm_session_token');
     this.router.navigate(['/login']);
   }
