@@ -5,6 +5,12 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Logs Views Load on Demand**: Navigating to System Logs, Audit Logs, or Admin Audit Logs no longer fetches data automatically. The tables load only when the user clicks the respective "Refresh …" button and show a hint until then.
+- **Auto-Refresh Gate**: The 5-second auto-refresh option in System Logs and Audit Logs is disabled until data has been loaded, so it cannot trigger the initial load.
+
 ## [v1.5.0] - 2026-10-19
 
 ### Added

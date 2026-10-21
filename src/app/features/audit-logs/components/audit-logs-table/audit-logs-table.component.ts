@@ -10,4 +10,5 @@ import { DatePipe } from '@angular/common';
 })
 export class AuditLogsTableComponent {
   logs = input.required<AuditLogEntry[]>();
+  hasLoaded = input<boolean>(false);
 }

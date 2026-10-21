@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, effect, inject } from '@angular/core';
+import { Component, OnDestroy, signal, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuditLogsService } from './services/audit-logs.service';
 import { ExcelExportService } from './services/excel-export.service';
@@ -18,12 +18,13 @@ import { Subscription } from 'rxjs';
     ...HlmButtonImports
   ]
 })
-export class AuditLogsComponent implements OnInit, OnDestroy {
+export class AuditLogsComponent implements OnDestroy {
   private auditLogsService = inject(AuditLogsService);
   private excelExportService = inject(ExcelExportService);
 
   logs = signal<AuditLogEntry[]>([]);
   isLoading = signal<boolean>(false);
+  hasLoaded = signal<boolean>(false);
   
   autoRefresh = signal<boolean>(false);
   useDateRange = signal<boolean>(false);
@@ -44,7 +45,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
 
     // Handle auto refresh toggle via effect
     effect((onCleanup) => {
-      const isAuto = this.autoRefresh();
+      const isAuto = this.autoRefresh() && this.hasLoaded();
       if (isAuto) {
         this.refreshInterval = setInterval(() => this.fetchData(), 5000);
       } else {
@@ -56,10 +57,6 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
         if (this.refreshInterval) clearInterval(this.refreshInterval);
       });
     });
-  }
-
-  ngOnInit() {
-    this.fetchData();
   }
 
   ngOnDestroy() {
@@ -89,6 +86,7 @@ export class AuditLogsComponent implements OnInit, OnDestroy {
     this.fetchSubscription = this.auditLogsService.getLogs(from, to).subscribe({
       next: (data) => {
         this.logs.set(data);
+        this.hasLoaded.set(true);
         this.isLoading.set(false);
       },
       error: (err) => {

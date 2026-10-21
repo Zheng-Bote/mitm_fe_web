@@ -34,7 +34,9 @@ import { HlmTableImports } from '@spartan-ng/helm/table';
           }
           @if (logs().length === 0) {
             <tr hlmTr>
-              <td hlmTd colspan="5" class="text-center text-muted-foreground">No logs found</td>
+              <td hlmTd colspan="5" class="text-center text-muted-foreground">
+                {{ hasLoaded() ? 'No logs found' : 'Not loaded yet – click "Refresh System Logs" to load logs.' }}
+              </td>
             </tr>
           }
         </tbody>
@@ -44,6 +46,7 @@ import { HlmTableImports } from '@spartan-ng/helm/table';
 })
 export class SystemLogsTableComponent {
   logs = input.required<SystemLogItem[]>();
+  hasLoaded = input<boolean>(false);
 
   formatTimestamp(ts: string): string {
     if (!ts) return '';
