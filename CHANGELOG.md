@@ -5,7 +5,7 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v1.6.0] - 2026-10-21
 
 ### Added
 - **Transformation Errors View**: New page for `USER` and `ADMIN` listing failed transformation and validation records from `GET /api/v1/logs/transformation-errors` (FlatBuffers), with optional date-range filtering and CSV export. The table loads only when the user clicks "Refresh Transformation Errors", consistent with the other log views; there is no auto-refresh.
