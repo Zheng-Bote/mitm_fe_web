@@ -28,6 +28,12 @@ export const routes: Routes = [
         data: { roles: ['ADMIN', 'USER'] }
       },
       {
+        path: 'transformation-errors',
+        loadComponent: () => import('./features/transformation-errors/transformation-errors.component').then(m => m.TransformationErrorsComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'USER'] }
+      },
+      {
         path: 'audit-logs',
         loadComponent: () => import('./features/audit-logs/audit-logs.component').then(m => m.AuditLogsComponent)
       },
