@@ -34,6 +34,12 @@ export const routes: Routes = [
         data: { roles: ['ADMIN', 'USER'] }
       },
       {
+        path: 'dlq',
+        loadComponent: () => import('./features/dlq/dlq.component').then(m => m.DlqComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'USER'] }
+      },
+      {
         path: 'audit-logs',
         loadComponent: () => import('./features/audit-logs/audit-logs.component').then(m => m.AuditLogsComponent)
       },
