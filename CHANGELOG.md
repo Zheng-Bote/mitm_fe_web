@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Transformation Errors View**: New page for `USER` and `ADMIN` listing failed transformation and validation records from `GET /api/v1/logs/transformation-errors` (FlatBuffers), with optional date-range filtering and CSV export. The table loads only when the user clicks "Refresh Transformation Errors", consistent with the other log views; there is no auto-refresh.
+
 ### Changed
 - **Logs Views Load on Demand**: Navigating to System Logs, Audit Logs, or Admin Audit Logs no longer fetches data automatically. The tables load only when the user clicks the respective "Refresh …" button and show a hint until then.
 - **Auto-Refresh Gate**: The 5-second auto-refresh option in System Logs and Audit Logs is disabled until data has been loaded, so it cannot trigger the initial load.
