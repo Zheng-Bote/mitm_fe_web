@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, signal, effect, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SystemLogsService, SystemLogItem } from '../../core/services/system-logs.service';
@@ -29,7 +29,8 @@ import { Subscription, interval } from 'rxjs';
           <input type="checkbox"
                  [ngModel]="autoRefresh()"
                  (ngModelChange)="autoRefresh.set($event)"
-                 class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+                 [disabled]="!hasLoaded()"
+                 class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50" />
           Auto-Refresh (5s)
         </label>
 
@@ -40,33 +41,30 @@ import { Subscription, interval } from 'rxjs';
 
       <!-- Data Table -->
       <div class="flex-1 overflow-auto">
-        <app-system-logs-table [logs]="logs()" />
+        <app-system-logs-table [logs]="logs()" [hasLoaded]="hasLoaded()" />
       </div>
     </div>
   `
 })
-export class SystemLogsComponent implements OnInit, OnDestroy {
+export class SystemLogsComponent implements OnDestroy {
   private logsService = inject(SystemLogsService);
 
   logs = signal<SystemLogItem[]>([]);
   isLoading = signal(false);
   autoRefresh = signal(false);
+  hasLoaded = signal(false);
 
   private autoRefreshSub?: Subscription;
 
   constructor() {
     effect(() => {
-      const isAuto = this.autoRefresh();
+      const isAuto = this.autoRefresh() && this.hasLoaded();
       if (isAuto) {
         this.startAutoRefresh();
       } else {
         this.stopAutoRefresh();
       }
     });
-  }
-
-  ngOnInit() {
-    this.refresh();
   }
 
   ngOnDestroy() {
@@ -80,6 +78,7 @@ export class SystemLogsComponent implements OnInit, OnDestroy {
     this.logsService.getLogs().subscribe({
       next: (data) => {
         this.logs.set(data);
+        this.hasLoaded.set(true);
         this.isLoading.set(false);
       },
       error: (err) => {

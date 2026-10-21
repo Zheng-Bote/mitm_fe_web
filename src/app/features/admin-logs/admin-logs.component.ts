@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminLogsService, AdminLogItem } from '../../core/services/admin-logs.service';
 import { AdminLogsTableComponent } from './components/admin-logs-table/admin-logs-table.component';
@@ -29,20 +29,17 @@ import { saveAs } from 'file-saver';
 
       <!-- Data Table -->
       <div class="flex-1 overflow-auto">
-        <app-admin-logs-table [logs]="logs()" />
+        <app-admin-logs-table [logs]="logs()" [hasLoaded]="hasLoaded()" />
       </div>
     </div>
   `
 })
-export class AdminLogsComponent implements OnInit {
+export class AdminLogsComponent {
   private logsService = inject(AdminLogsService);
 
   logs = signal<AdminLogItem[]>([]);
   isLoading = signal(false);
-
-  ngOnInit() {
-    this.refresh();
-  }
+  hasLoaded = signal(false);
 
   refresh() {
     if (this.isLoading()) return;
@@ -51,6 +48,7 @@ export class AdminLogsComponent implements OnInit {
     this.logsService.getLogs().subscribe({
       next: (data) => {
         this.logs.set(data);
+        this.hasLoaded.set(true);
         this.isLoading.set(false);
       },
       error: (err) => {

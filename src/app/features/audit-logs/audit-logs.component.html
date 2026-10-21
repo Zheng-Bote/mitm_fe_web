@@ -5,7 +5,7 @@
     </button>
     
     <label class="flex items-center gap-2 text-sm font-medium">
-      <input type="checkbox" [ngModel]="autoRefresh()" (ngModelChange)="autoRefresh.set($event)" class="h-4 w-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900" />
+      <input type="checkbox" [ngModel]="autoRefresh()" (ngModelChange)="autoRefresh.set($event)" [disabled]="!hasLoaded()" class="h-4 w-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900 disabled:cursor-not-allowed disabled:opacity-50" />
       Auto-Refresh (5s)
     </label>
 
@@ -40,6 +40,6 @@
   </div>
 
   <div class="rounded-md border bg-card text-card-foreground shadow-sm">
-    <app-audit-logs-table [logs]="logs()"></app-audit-logs-table>
+    <app-audit-logs-table [logs]="logs()" [hasLoaded]="hasLoaded()"></app-audit-logs-table>
   </div>
 </div>

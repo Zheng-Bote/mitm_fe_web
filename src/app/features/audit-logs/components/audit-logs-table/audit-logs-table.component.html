@@ -22,7 +22,9 @@
       }
       @if (logs().length === 0) {
         <tr hlmTr>
-          <td hlmTd colspan="5" class="text-center p-4">No audit logs found.</td>
+          <td hlmTd colspan="5" class="text-center p-4">
+            {{ hasLoaded() ? 'No audit logs found.' : 'Not loaded yet – click "Refresh Job Audits" to load logs.' }}
+          </td>
         </tr>
       }
     </tbody>
