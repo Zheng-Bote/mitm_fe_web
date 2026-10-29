@@ -38,3 +38,18 @@ export function authErrorMessage(err: unknown): string {
 
   return err instanceof Error && err.message ? err.message : 'Authentication failed.';
 }
+
+const SSO_ERRORS: Record<string, string> = {
+  invalid_state: 'The SSO sign-in expired or was already used. Please try again.',
+  idp_error: 'The SSO sign-in was cancelled or rejected by the identity provider.',
+  idp_unavailable: 'The identity provider is not reachable. Please try again later.',
+  unknown_user: 'Your SSO account is not registered in MitM Admin. Please contact an administrator.',
+  inactive_user: 'Your account is inactive (pending administrator approval).'
+};
+
+/**
+ * Maps the `sso_error` code of a failed OIDC callback (`/login?sso_error=...`) to a user-facing message.
+ */
+export function ssoErrorMessage(code: string): string {
+  return SSO_ERRORS[code] ?? 'SSO sign-in failed. Please try again.';
+}

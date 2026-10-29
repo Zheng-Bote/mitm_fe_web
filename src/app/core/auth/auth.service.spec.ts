@@ -89,4 +89,23 @@ describe('AuthService', () => {
     await register;
     expect(service.sessionToken()).toBe('token-admin');
   });
+
+  it('stores the session token returned for an OIDC handoff', async () => {
+    const exchange = firstValueFrom(service.exchangeOidcHandoff('h-1'));
+
+    const req = http.expectOne('/api/v1/auth/oidc/exchange');
+    expect(req.request.body).toEqual({ handoff: 'h-1' });
+    req.flush({ session_token: 'token-sso' });
+
+    await exchange;
+    expect(service.sessionToken()).toBe('token-sso');
+  });
+
+  it('reports OIDC as disabled when the backend does not support it', async () => {
+    const enabled = firstValueFrom(service.oidcEnabled());
+
+    http.expectOne('/api/v1/auth/oidc/config').flush({}, { status: 404, statusText: 'Not Found' });
+
+    expect(await enabled).toBe(false);
+  });
 });

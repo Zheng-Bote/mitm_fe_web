@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, DOCUMENT } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap, catchError, map, switchMap } from 'rxjs/operators';
@@ -47,6 +47,7 @@ export interface RegistrationResult {
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private document = inject(DOCUMENT);
 
   // State via Angular Signals
   private readonly _sessionToken = signal<string | null>(sessionStorage.getItem('mitm_session_token'));
@@ -79,6 +80,33 @@ export class AuthService {
   bootstrapRequired(): Observable<boolean> {
     return this.http.get<{ bootstrap_required: boolean }>(`/api/v1/auth/bootstrap/status`).pipe(
       map(response => response.bootstrap_required)
+    );
+  }
+
+  /**
+   * Returns whether the backend offers OAuth2/OIDC sign-in; false for backends without OIDC support.
+   */
+  oidcEnabled(): Observable<boolean> {
+    return this.http.get<{ enabled: boolean }>(`/api/v1/auth/oidc/config`).pipe(
+      map(response => response.enabled),
+      catchError(() => of(false))
+    );
+  }
+
+  /**
+   * Starts the OIDC sign-in with a full-page navigation: the backend redirects to the
+   * identity provider and afterwards back to `/auth/callback`.
+   */
+  startOidcLogin(): void {
+    this.document.location.assign('/api/v1/auth/oidc/login');
+  }
+
+  /**
+   * Exchanges the single-use handoff id from the OIDC callback redirect for the session token.
+   */
+  exchangeOidcHandoff(handoff: string): Observable<SessionResponse> {
+    return this.http.post<SessionResponse>(`/api/v1/auth/oidc/exchange`, { handoff }).pipe(
+      tap(response => this.setSession(response.session_token))
     );
   }
 
