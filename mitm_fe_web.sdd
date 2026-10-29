@@ -17,7 +17,8 @@ Must:
 Must:
   The frontend must automatically renew active sessions in the background (e.g. every 30 minutes) to prevent premature timeouts during active use.
   The frontend must explicitly check for and gracefully parse backend JSON:API error messages for rejected logins (e.g., inactive users).
-  Sign-in and registration use the WebAuthn passkey ceremony (`/api/v1/auth/webauthn/*`) via `@simplewebauthn/browser`; a session token is only stored after `login/finish` or the bootstrap `register/finish`.
+  Sign-in and registration use the WebAuthn passkey ceremony (`/api/v1/auth/webauthn/*`) via `@simplewebauthn/browser`; a session token is only stored after `login/finish`, the bootstrap `register/finish` or the OIDC handoff exchange (`/api/v1/auth/oidc/exchange`).
+  When `/api/v1/auth/oidc/config` reports `enabled`, the login page offers "Sign in with SSO", and the `/auth/callback` route exchanges the handoff id for the session token.
   The bootstrap token input is shown only while `/api/v1/auth/bootstrap/status` reports `bootstrap_required`.
 
 Must not:

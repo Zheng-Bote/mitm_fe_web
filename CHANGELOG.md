@@ -5,6 +5,11 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.7.0] - 2026-10-29
+
+### Added
+- **SSO Sign-in (OAuth2/OIDC)**: When the backend reports OIDC as enabled (`GET /api/v1/auth/oidc/config`), the login page offers "Sign in with SSO" next to the passkey sign-in. The new `/auth/callback` route exchanges the single-use handoff id from the backend redirect (`POST /api/v1/auth/oidc/exchange`) for the session token and opens the dashboard. Failed SSO callbacks (`/login?sso_error=…`) are shown as readable messages. Requires core-layer `mitm_http-server` 2.1.0; older backends simply hide the SSO button.
+
 ## [v1.6.0] - 2026-10-21
 
 ### Added

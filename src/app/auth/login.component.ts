@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -7,7 +7,7 @@ import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { AuthService, RegistrationRequest } from '../core/auth/auth.service';
-import { authErrorMessage } from './auth-error-message';
+import { authErrorMessage, ssoErrorMessage } from './auth-error-message';
 
 type Mode = 'signin' | 'register';
 
@@ -30,6 +30,13 @@ type Mode = 'signin' | 'register';
             }
           </p>
         </div>
+
+        @if (oidcEnabled() && !bootstrapRequired()) {
+          <button hlmBtn type="button" class="w-full" [disabled]="isLoading()" (click)="onSso()">
+            Sign in with SSO
+          </button>
+          <p class="text-center text-xs text-muted-foreground">or use your passkey</p>
+        }
 
         @if (!webAuthnSupported) {
           <div class="text-red-500 text-sm text-center">
@@ -114,6 +121,7 @@ type Mode = 'signin' | 'register';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
 
   /** Same suggestions as the desktop frontend; free text is allowed. */
@@ -134,11 +142,17 @@ export class LoginComponent {
 
   mode = signal<Mode>('signin');
   bootstrapRequired = signal<boolean>(false);
+  oidcEnabled = signal<boolean>(false);
   isLoading = signal<boolean>(false);
   errorMessage = signal<string>('');
   infoMessage = signal<string>('');
 
   ngOnInit() {
+    const ssoError = this.route.snapshot.queryParamMap.get('sso_error');
+    if (ssoError) {
+      this.errorMessage.set(ssoErrorMessage(ssoError));
+    }
+    this.authService.oidcEnabled().subscribe(enabled => this.oidcEnabled.set(enabled));
     this.authService.bootstrapRequired().subscribe({
       next: required => {
         this.bootstrapRequired.set(required);
@@ -154,6 +168,11 @@ export class LoginComponent {
     this.mode.set(mode as Mode);
     this.errorMessage.set('');
     this.infoMessage.set('');
+  }
+
+  onSso() {
+    this.startRequest();
+    this.authService.startOidcLogin();
   }
 
   onSignIn() {

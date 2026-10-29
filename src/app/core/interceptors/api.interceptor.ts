@@ -28,7 +28,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Inject Bearer token if we have one and we are not calling the public auth endpoints
   const token = authService.sessionToken();
-  if (token && !req.url.includes('/api/v1/auth/webauthn/') && !req.url.includes('/api/v1/auth/bootstrap/')) {
+  if (token && !req.url.includes('/api/v1/auth/webauthn/') && !req.url.includes('/api/v1/auth/oidc/') && !req.url.includes('/api/v1/auth/bootstrap/')) {
     headers = headers.set('Authorization', `Bearer ${token}`);
   }
 
