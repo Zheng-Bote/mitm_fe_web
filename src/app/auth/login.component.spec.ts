@@ -6,18 +6,15 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../core/auth/auth.service';
+import { WEBAUTHN } from '../core/auth/webauthn';
 import { LoginComponent } from './login.component';
-
-vi.mock('@simplewebauthn/browser', () => ({
-  browserSupportsWebAuthn: () => true,
-  WebAuthnError: class extends Error {}
-}));
 
 async function render(bootstrapRequired: boolean, oidcEnabled = false, url = '/login') {
   await TestBed.configureTestingModule({
     imports: [LoginComponent],
     providers: [
       provideRouter([{ path: 'login', component: LoginComponent }]),
+      { provide: WEBAUTHN, useValue: { browserSupportsWebAuthn: () => true, startAuthentication: vi.fn(), startRegistration: vi.fn() } },
       { provide: AuthService, useValue: { bootstrapRequired: () => of(bootstrapRequired), oidcEnabled: () => of(oidcEnabled), startOidcLogin: vi.fn() } }
     ]
   }).compileComponents();

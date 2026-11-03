@@ -7,13 +7,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 import { AuthService } from './auth.service';
+import { WEBAUTHN } from './webauthn';
 
-vi.mock('@simplewebauthn/browser', () => ({
-  startAuthentication: vi.fn(),
-  startRegistration: vi.fn()
-}));
+const startAuthentication = vi.fn();
+const startRegistration = vi.fn();
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -21,8 +19,15 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     sessionStorage.clear();
+    startAuthentication.mockReset();
+    startRegistration.mockReset();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])]
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: WEBAUTHN, useValue: { startAuthentication, startRegistration, browserSupportsWebAuthn: () => true } }
+      ]
     });
     service = TestBed.inject(AuthService);
     http = TestBed.inject(HttpTestingController);
@@ -35,7 +40,7 @@ describe('AuthService', () => {
 
   it('issues a session only after the passkey ceremony finishes', async () => {
     const credential = { id: 'cred', rawId: 'cred', type: 'public-key' };
-    vi.mocked(startAuthentication).mockResolvedValue(credential as never);
+    startAuthentication.mockResolvedValue(credential as never);
 
     const login = firstValueFrom(service.loginWithPasskey('alice'));
 
@@ -57,7 +62,7 @@ describe('AuthService', () => {
   });
 
   it('does not sign in a newly registered user pending approval', async () => {
-    vi.mocked(startRegistration).mockResolvedValue({ id: 'cred', authenticatorAttachment: 'cross-platform' } as never);
+    startRegistration.mockResolvedValue({ id: 'cred', authenticatorAttachment: 'cross-platform' } as never);
 
     const register = firstValueFrom(service.registerPasskey({ username: 'bob' }));
 
@@ -74,7 +79,7 @@ describe('AuthService', () => {
   });
 
   it('signs in the bootstrap administrator with the returned session token', async () => {
-    vi.mocked(startRegistration).mockResolvedValue({ id: 'cred' } as never);
+    startRegistration.mockResolvedValue({ id: 'cred' } as never);
 
     const register = firstValueFrom(service.registerPasskey({ username: 'admin', bootstrap_token: 't'.repeat(32) }));
 

@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmFieldImports } from '@spartan-ng/helm/field';
 import { HlmInputImports } from '@spartan-ng/helm/input';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { AuthService, RegistrationRequest } from '../core/auth/auth.service';
+import { WEBAUTHN } from '../core/auth/webauthn';
 import { authErrorMessage, ssoErrorMessage } from './auth-error-message';
 
 type Mode = 'signin' | 'register';
@@ -126,7 +126,7 @@ export class LoginComponent {
 
   /** Same suggestions as the desktop frontend; free text is allowed. */
   readonly departments = ['IT Security', 'Engineering', 'Finance', 'Operations', 'Administration'];
-  readonly webAuthnSupported = browserSupportsWebAuthn();
+  readonly webAuthnSupported = inject(WEBAUTHN).browserSupportsWebAuthn();
 
   loginForm = this.fb.group({
     username: ['', Validators.required]
