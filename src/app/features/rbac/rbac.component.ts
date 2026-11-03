@@ -7,11 +7,14 @@ import { RbacService } from '../../core/services/rbac.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { Role, User } from '../../core/models/user.model';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
+import { ConfirmService } from '../../core/confirm/confirm.service';
 import { UserEditorDialogComponent } from './components/user-editor-dialog/user-editor-dialog.component';
 
 @Component({
   selector: 'app-rbac',
-  imports: [CommonModule, HlmButtonImports, UserEditorDialogComponent],
+  imports: [CommonModule, HlmButtonImports, HlmDialogImports, BrnDialogImports, UserEditorDialogComponent],
   template: `
     <div class="flex flex-col h-full p-4 gap-4">
       <div class="flex items-center gap-4 border-b pb-4">
@@ -68,20 +71,26 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
         </table>
       </div>
       
-      @if (showDialog()) {
-        <app-user-editor-dialog 
-          [user]="selectedUser()" 
-          [roles]="roles()"
-          (close)="closeDialog()" 
-          (saved)="closeDialog(); refresh()">
-        </app-user-editor-dialog>
-      }
+      <hlm-dialog [state]="showDialog() ? 'open' : 'closed'" (closed)="closeDialog()">
+        <hlm-dialog-content class="sm:max-w-lg max-h-[90vh] overflow-y-auto" *brnDialogContent="let ctx">
+          <hlm-dialog-header>
+            <h3 hlmDialogTitle>{{ selectedUser() ? 'Edit User' : 'Add User' }}</h3>
+          </hlm-dialog-header>
+          <app-user-editor-dialog
+            [user]="selectedUser()"
+            [roles]="roles()"
+            (close)="closeDialog()"
+            (saved)="closeDialog(); refresh()">
+          </app-user-editor-dialog>
+        </hlm-dialog-content>
+      </hlm-dialog>
     </div>
   `
 })
 export class RbacComponent implements OnInit {
   private rbacService = inject(RbacService);
   private authService = inject(AuthService);
+  private confirmService = inject(ConfirmService);
 
   users = signal<User[]>([]);
   roles = signal<Role[]>([]);
@@ -151,8 +160,14 @@ export class RbacComponent implements OnInit {
     this.selectedUser.set(null);
   }
 
-  terminateSession(id: number) {
-    if (confirm('Are you sure you want to terminate the session for this user?')) {
+  async terminateSession(id: number) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Terminate session?',
+      message: 'The user will be signed out and has to sign in again.',
+      confirmLabel: 'Terminate Session',
+      destructive: true,
+    });
+    if (confirmed) {
       this.rbacService.terminateSession(id).subscribe({
         next: () => {
           toast.success('Session terminated.');
@@ -163,12 +178,22 @@ export class RbacComponent implements OnInit {
     }
   }
 
-  deleteUser(user: User) {
+  async deleteUser(user: User) {
     const isSelf = user.username.toUpperCase() === (this.authService.osUser() ?? '').toUpperCase();
-    const question = isSelf
-      ? 'You are about to delete your own account. You will be signed out and cannot sign in again. Continue?'
-      : 'Are you sure you want to delete this user?';
-    if (confirm(question)) {
+    const confirmed = await this.confirmService.confirm(isSelf
+      ? {
+          title: 'Delete your own account?',
+          message: 'You are about to delete your own account. You will be signed out and cannot sign in again.',
+          confirmLabel: 'Delete my account',
+          destructive: true,
+        }
+      : {
+          title: 'Delete user?',
+          message: `Are you sure you want to delete the user ${user.username}?`,
+          confirmLabel: 'Delete',
+          destructive: true,
+        });
+    if (confirmed) {
       this.rbacService.deleteUser(user.id).subscribe({
         next: () => {
           toast.success('User deleted.');

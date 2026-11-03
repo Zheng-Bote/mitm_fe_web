@@ -8,6 +8,11 @@ describe('Layout', () => {
   let fixture: ComponentFixture<Layout>;
 
   beforeEach(async () => {
+    // jsdom has no matchMedia; the dialog overlay queries it.
+    window.matchMedia ??= ((query: string) => ({
+      matches: false, media: query, onchange: null,
+      addEventListener: () => {}, removeEventListener: () => {}, addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
     await TestBed.configureTestingModule({
       imports: [Layout],
       providers: [provideRouter([])],
@@ -26,13 +31,16 @@ describe('Layout', () => {
     expect(text).toContain('USER_SETTINGS');
   });
 
-  it('should open and close user settings modal', () => {
+  it('should open and close user settings modal', async () => {
     expect(component.showUserSettings()).toBe(false);
     component.openUserSettings();
     fixture.detectChanges();
+    await fixture.whenStable();
     expect(component.showUserSettings()).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('User Settings');
-    expect(fixture.nativeElement.textContent).toContain('eMail');
+    // The dialog renders into the CDK overlay container, outside the component.
+    const dialog = document.querySelector('[role="dialog"]')!;
+    expect(dialog.textContent).toContain('User Settings');
+    expect(dialog.textContent).toContain('eMail');
 
     component.closeUserSettings();
     fixture.detectChanges();

@@ -6,12 +6,14 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { UserEditorDialogComponent } from './user-editor-dialog.component';
 import { Role, User } from '../../../../core/models/user.model';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { ConfirmService } from '../../../../core/confirm/confirm.service';
 
 describe('UserEditorDialogComponent', () => {
   let fixture: ComponentFixture<UserEditorDialogComponent>;
   let component: UserEditorDialogComponent;
   let http: HttpTestingController;
   const fetchRoles = vi.fn(() => of([]));
+  const confirm = vi.fn<(o: { message: string }) => Promise<boolean>>();
 
   const roles: Role[] = [
     { id: 1, name: 'ADMIN' },
@@ -29,11 +31,14 @@ describe('UserEditorDialogComponent', () => {
     is_active: true,
   };
 
-  function roleCheckbox(name: string): HTMLInputElement {
-    const label = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('fieldset label'))
+  /** The Spartan checkbox (a `button[role=checkbox]`) linked to the role label. */
+  function roleCheckbox(name: string): HTMLElement {
+    const label = Array.from<HTMLLabelElement>(fixture.nativeElement.querySelectorAll('fieldset label'))
       .find(l => l.textContent?.trim() === name)!;
-    return label.querySelector('input')!;
+    return fixture.nativeElement.querySelector(`#${label.htmlFor}`)!;
   }
+
+  const isChecked = (name: string) => roleCheckbox(name).getAttribute('aria-checked') === 'true';
 
   function openEdit(u: User = user, roleIds: number[] = [3]) {
     fixture.componentRef.setInput('user', u);
@@ -49,6 +54,7 @@ describe('UserEditorDialogComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: AuthService, useValue: { osUser: signal('ADMIN1'), fetchRoles } },
+        { provide: ConfirmService, useValue: { confirm } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(UserEditorDialogComponent);
@@ -61,12 +67,13 @@ describe('UserEditorDialogComponent', () => {
     http.verify();
     vi.restoreAllMocks();
     fetchRoles.mockClear();
+    confirm.mockReset();
   });
 
   describe('removing the own ADMIN role', () => {
     const self: User = { ...user, id: 1, username: 'admin1' };
 
-    it('warns and asks for confirmation before saving', () => {
+    it('warns and asks for confirmation before saving', async () => {
       openEdit(self, [1]);
       expect(component.removesOwnAdmin()).toBe(false);
 
@@ -74,17 +81,17 @@ describe('UserEditorDialogComponent', () => {
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain('your own account');
 
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-      component.save();
-      expect(confirmSpy).toHaveBeenCalled();
+      confirm.mockResolvedValue(false);
+      await component.save();
+      expect(confirm).toHaveBeenCalled();
       http.expectNone('/api/v1/iam/users/1');
     });
 
-    it('saves after confirmation and reloads the own roles', () => {
+    it('saves after confirmation and reloads the own roles', async () => {
       openEdit(self, [1]);
       roleCheckbox('ADMIN').click();
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
-      component.save();
+      confirm.mockResolvedValue(true);
+      await component.save();
 
       http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/1' }).flush(null);
       const assign = http.expectOne('/api/v1/iam/assign-role');
@@ -94,16 +101,16 @@ describe('UserEditorDialogComponent', () => {
       expect(fetchRoles).toHaveBeenCalledTimes(1);
     });
 
-    it('warns before deactivating the own account', () => {
+    it('warns before deactivating the own account', async () => {
       openEdit(self, [1]);
       component.form.controls.is_active.setValue(false);
       fixture.detectChanges();
       expect(component.deactivatesSelf()).toBe(true);
       expect(fixture.nativeElement.textContent).toContain('You are deactivating your own account.');
 
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-      component.save();
-      expect(confirmSpy.mock.calls[0][0]).toContain('deactivate your own account');
+      confirm.mockResolvedValue(false);
+      await component.save();
+      expect(confirm.mock.calls[0][0].message).toContain('deactivate your own account');
       http.expectNone('/api/v1/iam/users/1');
     });
 
@@ -144,8 +151,8 @@ describe('UserEditorDialogComponent', () => {
 
   it('preselects the current roles and replaces them on save', () => {
     openEdit(user, [3]);
-    expect(roleCheckbox('VIEWER').checked).toBe(true);
-    expect(roleCheckbox('USER').checked).toBe(false);
+    expect(isChecked('VIEWER')).toBe(true);
+    expect(isChecked('USER')).toBe(false);
 
     roleCheckbox('USER').click();
     roleCheckbox('VIEWER').click();
