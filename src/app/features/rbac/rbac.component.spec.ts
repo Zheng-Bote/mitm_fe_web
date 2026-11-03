@@ -6,11 +6,13 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { RbacComponent } from './rbac.component';
 import { User } from '../../core/models/user.model';
 import { AuthService } from '../../core/auth/auth.service';
+import { ConfirmService } from '../../core/confirm/confirm.service';
 
 describe('RbacComponent', () => {
   let fixture: ComponentFixture<RbacComponent>;
   let http: HttpTestingController;
   const logout = vi.fn();
+  const confirm = vi.fn<(o: { title: string; message: string }) => Promise<boolean>>();
 
   const users: User[] = [
     { id: 1, username: 'ADMIN', first_name: 'Ada', last_name: 'Admin', department: null, email: null, is_active: true },
@@ -30,6 +32,7 @@ describe('RbacComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: AuthService, useValue: { osUser: signal('ADMIN'), logout } },
+        { provide: ConfirmService, useValue: { confirm } },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(RbacComponent);
@@ -48,6 +51,7 @@ describe('RbacComponent', () => {
     http.verify();
     vi.restoreAllMocks();
     logout.mockClear();
+    confirm.mockReset();
   });
 
   function flushUserRoles() {
@@ -56,12 +60,12 @@ describe('RbacComponent', () => {
     http.expectOne('/api/v1/iam/users/3').flush({ ...users[2], role_ids: [] });
   }
 
-  it('shows an error toast with the backend detail when deleting fails', () => {
+  it('shows an error toast with the backend detail when deleting fails', async () => {
     flushUserRoles();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    confirm.mockResolvedValue(true);
     const error = vi.spyOn(toast, 'error');
 
-    fixture.componentInstance.deleteUser(users[1]);
+    await fixture.componentInstance.deleteUser(users[1]);
     http.expectOne({ method: 'DELETE', url: '/api/v1/iam/users/2' }).flush(
       { errors: [{ status: '500', title: 'Database error', detail: 'connection refused' }] },
       { status: 500, statusText: 'Internal Server Error' },
@@ -70,34 +74,38 @@ describe('RbacComponent', () => {
     expect(error).toHaveBeenCalledWith('Failed to delete the user.', { description: 'connection refused' });
   });
 
-  it('shows an error toast when terminating a session fails', () => {
+  it('shows an error toast when terminating a session fails', async () => {
     flushUserRoles();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    confirm.mockResolvedValue(true);
     const error = vi.spyOn(toast, 'error');
 
-    fixture.componentInstance.terminateSession(2);
+    await fixture.componentInstance.terminateSession(2);
     http.expectOne({ method: 'DELETE', url: '/api/v1/iam/users/2/session' }).flush(null, { status: 503, statusText: 'Service Unavailable' });
 
     expect(error).toHaveBeenCalledWith('Failed to terminate the session.', { description: 'Service Unavailable' });
   });
 
-  it('warns before deleting the own account and signs out afterwards', () => {
+  it('warns before deleting the own account and signs out afterwards', async () => {
     flushUserRoles();
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    confirm.mockResolvedValue(true);
 
-    fixture.componentInstance.deleteUser(users[0]);
-    expect(confirmSpy.mock.calls[0][0]).toContain('your own account');
+    await fixture.componentInstance.deleteUser(users[0]);
+    expect(confirm.mock.calls[0][0].message).toContain('your own account');
     http.expectOne({ method: 'DELETE', url: '/api/v1/iam/users/1' }).flush(null);
 
     expect(logout).toHaveBeenCalled();
     http.expectNone('/api/v1/iam/users');
   });
 
-  it('uses the normal question when deleting another user', () => {
+  it('uses the normal question when deleting another user', async () => {
     flushUserRoles();
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    fixture.componentInstance.deleteUser(users[1]);
-    expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to delete this user?');
+    confirm.mockResolvedValue(false);
+    await fixture.componentInstance.deleteUser(users[1]);
+    expect(confirm.mock.calls[0][0]).toEqual(expect.objectContaining({
+      title: 'Delete user?',
+      message: 'Are you sure you want to delete the user Q225265?',
+    }));
+    http.expectNone({ method: 'DELETE', url: '/api/v1/iam/users/2' });
   });
 
   it('shows the role names of every user in the Roles column', () => {

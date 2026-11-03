@@ -11,6 +11,7 @@ import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { JobEditorDialogComponent } from './components/job-editor-dialog/job-editor-dialog.component';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { ConfirmService } from '../../core/confirm/confirm.service';
 
 @Component({
   selector: 'app-scheduler',
@@ -23,6 +24,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class SchedulerComponent implements OnDestroy {
   readonly schedulerService = inject(SchedulerService);
   readonly authService = inject(AuthService);
+  private readonly confirmService = inject(ConfirmService);
   
   readonly jobs = this.schedulerService.jobs;
   readonly isLoading = this.schedulerService.isLoading;
@@ -99,20 +101,38 @@ export class SchedulerComponent implements OnDestroy {
     }
   }
   
-  onDeleteJob(jobName: string) {
-    if (confirm(`Are you sure you want to delete job '${jobName}'?`)) {
+  async onDeleteJob(jobName: string) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Delete job?',
+      message: `Are you sure you want to delete job '${jobName}'?`,
+      confirmLabel: 'Delete',
+      destructive: true,
+    });
+    if (confirmed) {
       this.schedulerService.deleteJob(jobName);
     }
   }
 
-  onStopJob(jobName: string) {
-    if (confirm(`Are you sure you want to stop job '${jobName}'?`)) {
+  async onStopJob(jobName: string) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Stop job?',
+      message: `Are you sure you want to stop job '${jobName}'?`,
+      confirmLabel: 'Stop',
+      destructive: true,
+    });
+    if (confirmed) {
       this.schedulerService.stopJob(jobName);
     }
   }
 
-  onExecuteJob(jobName: string) {
-    if (confirm(`Are you sure you want to execute job '${jobName}'?`)) {
+  async onExecuteJob(jobName: string) {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Execute job?',
+      message: `Are you sure you want to execute job '${jobName}'?`,
+      confirmLabel: 'Execute',
+      destructive: false,
+    });
+    if (confirmed) {
       this.schedulerService.executeJob(jobName);
     }
   }

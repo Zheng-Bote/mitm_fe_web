@@ -6,12 +6,14 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Job } from '../../models/job.model';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCheckbox } from '@spartan-ng/helm/checkbox';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmInput } from '@spartan-ng/helm/input';
 import { CronEditorComponent } from '../cron-editor/cron-editor.component';
 
 @Component({
   selector: 'app-job-editor-dialog',
   templateUrl: './job-editor-dialog.component.html',
-  imports: [ReactiveFormsModule, HlmButton, HlmCheckbox, CronEditorComponent],
+  imports: [ReactiveFormsModule, HlmButton, HlmCheckbox, HlmFieldImports, HlmInput, CronEditorComponent],
   host: {
     class: 'block w-full'
   }

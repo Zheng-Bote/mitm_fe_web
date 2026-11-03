@@ -5,6 +5,14 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.13.0] - 2026-11-03
+
+### Changed
+- **Spartan-NG in User Management**: The Add/Edit User dialog is a Spartan `hlm-dialog` (focus trap, Escape, backdrop) with `hlm-field` labels, `hlmInput` fields and `hlm-checkbox` for roles and "Is Active". All labels are linked to their fields (`for`/`id`), so clicking a label and screen readers work.
+- **Confirmation Dialogs**: `window.confirm()` is replaced by a Spartan alert dialog (`ConfirmService`) for deleting users, terminating sessions, self-lockout warnings and deleting, stopping or executing scheduler jobs. Destructive actions use a destructive confirm button.
+- **User Settings**: The User Settings modal is a Spartan `hlm-dialog`.
+- **Job Editor**: The Job Name and Command fields use `hlmInput` and theme colors instead of hard-coded gray/blue classes.
+
 ## [v1.12.0] - 2026-11-03
 
 ### Added

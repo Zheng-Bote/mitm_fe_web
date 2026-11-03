@@ -2,107 +2,103 @@ import { Component, computed, input, output, inject, OnInit, signal } from '@ang
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RbacService } from '../../../../core/services/rbac.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { Role, User } from '../../../../core/models/user.model';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCheckbox } from '@spartan-ng/helm/checkbox';
+import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import { HlmFieldImports } from '@spartan-ng/helm/field';
+import { HlmInput } from '@spartan-ng/helm/input';
+import { ConfirmService } from '../../../../core/confirm/confirm.service';
 
 @Component({
   selector: 'app-user-editor-dialog',
-  imports: [CommonModule, ReactiveFormsModule, HlmButtonImports],
+  imports: [ReactiveFormsModule, HlmButtonImports, HlmCheckbox, HlmDialogImports, HlmFieldImports, HlmInput],
   template: `
-    <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-card text-card-foreground border border-border rounded-xl p-6 w-full max-w-md shadow-lg">
-        <h2 class="text-xl font-bold mb-4">
-          @if (user()) { Edit User } @else { Add User }
-        </h2>
+    <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+      <hlm-field>
+        <label hlmFieldLabel for="user-username">Username</label>
+        <input hlmInput id="user-username" formControlName="username" type="text" autocomplete="off" [readonly]="!!user()" />
+      </hlm-field>
 
-        <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
-          
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium">Username</label>
-            <input formControlName="username" type="text" class="border border-border rounded p-2 bg-background text-foreground" [readonly]="!!user()">
-          </div>
+      @if (!user()) {
+        <hlm-field>
+          <label hlmFieldLabel for="user-password">Password</label>
+          <input hlmInput id="user-password" formControlName="password" type="password" autocomplete="new-password" />
+        </hlm-field>
+      }
 
-          @if (!user()) {
-            <div class="flex flex-col gap-2">
-              <label class="text-sm font-medium">Password</label>
-              <input formControlName="password" type="password" class="border border-border rounded p-2 bg-background text-foreground">
-            </div>
-          }
-
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium">First Name</label>
-            <input formControlName="first_name" type="text" class="border border-border rounded p-2 bg-background text-foreground">
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium">Last Name</label>
-            <input formControlName="last_name" type="text" class="border border-border rounded p-2 bg-background text-foreground">
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium">Department</label>
-            <input formControlName="department" type="text" class="border border-border rounded p-2 bg-background text-foreground">
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium">eMail</label>
-            <input formControlName="email" type="email" class="border border-border rounded p-2 bg-background text-foreground">
-            @if (form.controls.email.invalid) {
-              <p class="text-xs text-destructive">Enter a valid e-mail address.</p>
-            }
-          </div>
-
-          <fieldset class="flex flex-col gap-2">
-            <legend class="text-sm font-medium mb-2">Roles</legend>
-            @if (rolesLoaded()) {
-              @for (role of roles(); track role.id) {
-                <label class="flex items-center gap-2 text-sm font-tron">
-                  <input type="checkbox" class="rounded border-border bg-background"
-                    [checked]="selectedRoleIds().has(role.id)" (change)="toggleRole(role.id)">
-                  {{ role.name.toUpperCase() }}
-                </label>
-              } @empty {
-                <p class="text-xs text-foreground/70">No roles available.</p>
-              }
-            } @else {
-              <p class="text-xs text-foreground/70">Loading roles…</p>
-            }
-          </fieldset>
-
-          @if (removesOwnAdmin()) {
-            <p class="text-sm text-destructive border border-destructive/50 rounded p-2" role="alert">
-              You are removing the ADMIN role from your own account. You will lose access to User Management
-              and cannot undo this yourself.
-            </p>
-          }
-
-          <div class="flex items-center gap-2 mt-2">
-            <input formControlName="is_active" type="checkbox" id="isActive" class="rounded border-border bg-background">
-            <label for="isActive" class="text-sm font-medium">Is Active</label>
-          </div>
-
-          @if (deactivatesSelf()) {
-            <p class="text-sm text-destructive border border-destructive/50 rounded p-2" role="alert">
-              You are deactivating your own account. You will not be able to sign in again
-              until another administrator activates it.
-            </p>
-          }
-
-          @if (errorMessage(); as err) {
-            <p class="text-sm text-destructive">{{ err }}</p>
-          }
-
-          <div class="flex justify-end gap-2 mt-4">
-            <button type="button" hlmBtn variant="outline" (click)="close.emit()">Close</button>
-            <button type="submit" hlmBtn variant="default" [disabled]="form.invalid || !rolesLoaded() || isSaving()">Save</button>
-          </div>
-        </form>
+      <div class="grid grid-cols-2 gap-4">
+        <hlm-field>
+          <label hlmFieldLabel for="user-first-name">First Name</label>
+          <input hlmInput id="user-first-name" formControlName="first_name" type="text" />
+        </hlm-field>
+        <hlm-field>
+          <label hlmFieldLabel for="user-last-name">Last Name</label>
+          <input hlmInput id="user-last-name" formControlName="last_name" type="text" />
+        </hlm-field>
       </div>
-    </div>
+
+      <hlm-field>
+        <label hlmFieldLabel for="user-department">Department</label>
+        <input hlmInput id="user-department" formControlName="department" type="text" />
+      </hlm-field>
+
+      <hlm-field>
+        <label hlmFieldLabel for="user-email">eMail</label>
+        <input hlmInput id="user-email" formControlName="email" type="email" />
+        @if (form.controls.email.invalid) {
+          <p class="text-xs text-destructive">Enter a valid e-mail address.</p>
+        }
+      </hlm-field>
+
+      <fieldset hlmFieldSet>
+        <legend hlmFieldLegend variant="label">Roles</legend>
+        @if (rolesLoaded()) {
+          @for (role of roles(); track role.id) {
+            <hlm-field orientation="horizontal">
+              <hlm-checkbox [inputId]="'user-role-' + role.id" [checked]="selectedRoleIds().has(role.id)"
+                (checkedChange)="toggleRole(role.id)" />
+              <label hlmFieldLabel class="font-tron" [for]="'user-role-' + role.id">{{ role.name.toUpperCase() }}</label>
+            </hlm-field>
+          } @empty {
+            <p class="text-xs text-muted-foreground">No roles available.</p>
+          }
+        } @else {
+          <p class="text-xs text-muted-foreground">Loading roles…</p>
+        }
+      </fieldset>
+
+      @if (removesOwnAdmin()) {
+        <p class="text-sm text-destructive border border-destructive/50 rounded p-2" role="alert">
+          You are removing the ADMIN role from your own account. You will lose access to User Management
+          and cannot undo this yourself.
+        </p>
+      }
+
+      <hlm-field orientation="horizontal">
+        <hlm-checkbox inputId="user-is-active" formControlName="is_active" />
+        <label hlmFieldLabel for="user-is-active">Is Active</label>
+      </hlm-field>
+
+      @if (deactivatesSelf()) {
+        <p class="text-sm text-destructive border border-destructive/50 rounded p-2" role="alert">
+          You are deactivating your own account. You will not be able to sign in again
+          until another administrator activates it.
+        </p>
+      }
+
+      @if (errorMessage(); as err) {
+        <p class="text-sm text-destructive">{{ err }}</p>
+      }
+
+      <hlm-dialog-footer>
+        <button type="button" hlmBtn variant="outline" (click)="close.emit()">Cancel</button>
+        <button type="submit" hlmBtn [disabled]="form.invalid || !rolesLoaded() || isSaving()">Save</button>
+      </hlm-dialog-footer>
+    </form>
   `
 })
 export class UserEditorDialogComponent implements OnInit {
@@ -113,6 +109,7 @@ export class UserEditorDialogComponent implements OnInit {
 
   private rbacService = inject(RbacService);
   private authService = inject(AuthService);
+  private confirmService = inject(ConfirmService);
   private fb = inject(FormBuilder);
 
   form = this.fb.group({
@@ -185,7 +182,7 @@ export class UserEditorDialogComponent implements OnInit {
     });
   }
 
-  save() {
+  async save() {
     if (this.form.invalid || !this.rolesLoaded() || this.isSaving()) return;
 
     const val = this.form.value as Partial<User>;
@@ -197,8 +194,14 @@ export class UserEditorDialogComponent implements OnInit {
       this.removesOwnAdmin() ? 'remove the ADMIN role from your own account and lose access to User Management' : null,
       this.deactivatesSelf() ? 'deactivate your own account and not be able to sign in again' : null,
     ].filter(Boolean);
-    if (lockouts.length && !confirm(`You are about to ${lockouts.join(' and ')}. Continue?`)) {
-      return;
+    if (lockouts.length) {
+      const confirmed = await this.confirmService.confirm({
+        title: 'Lock yourself out?',
+        message: `You are about to ${lockouts.join(' and ')}. Continue?`,
+        confirmLabel: 'Save anyway',
+        destructive: true,
+      });
+      if (!confirmed) return;
     }
     const assign = (userId: number): Observable<void | null> =>
       rolesChanged ? this.rbacService.assignRoles(userId, roleIds) : of(null);
