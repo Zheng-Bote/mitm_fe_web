@@ -1,8 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { toast } from '@spartan-ng/brain/sonner';
 import { CommonModule } from '@angular/common';
 import { RbacService } from '../../core/services/rbac.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { Role, User } from '../../core/models/user.model';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { UserEditorDialogComponent } from './components/user-editor-dialog/user-editor-dialog.component';
@@ -58,7 +60,7 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
                 <td class="p-2 flex gap-2">
                   <button hlmBtn variant="outline" size="sm" (click)="openEditUser(user)">Edit</button>
                   <button hlmBtn variant="destructive" size="sm" (click)="terminateSession(user.id)">Terminate Session</button>
-                  <button hlmBtn variant="destructive" size="sm" (click)="deleteUser(user.id)">Delete</button>
+                  <button hlmBtn variant="destructive" size="sm" (click)="deleteUser(user)">Delete</button>
                 </td>
               </tr>
             }
@@ -79,6 +81,7 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
 })
 export class RbacComponent implements OnInit {
   private rbacService = inject(RbacService);
+  private authService = inject(AuthService);
 
   users = signal<User[]>([]);
   roles = signal<Role[]>([]);
@@ -107,6 +110,7 @@ export class RbacComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to fetch users:', err);
+        toast.error('Failed to load users.', { description: errorDetail(err) });
         this.isLoading.set(false);
       }
     });
@@ -149,13 +153,40 @@ export class RbacComponent implements OnInit {
 
   terminateSession(id: number) {
     if (confirm('Are you sure you want to terminate the session for this user?')) {
-      this.rbacService.terminateSession(id).subscribe(() => this.refresh());
+      this.rbacService.terminateSession(id).subscribe({
+        next: () => {
+          toast.success('Session terminated.');
+          this.refresh();
+        },
+        error: (err) => toast.error('Failed to terminate the session.', { description: errorDetail(err) })
+      });
     }
   }
 
-  deleteUser(id: number) {
-    if (confirm('Are you sure you want to delete this user?')) {
-      this.rbacService.deleteUser(id).subscribe(() => this.refresh());
+  deleteUser(user: User) {
+    const isSelf = user.username.toUpperCase() === (this.authService.osUser() ?? '').toUpperCase();
+    const question = isSelf
+      ? 'You are about to delete your own account. You will be signed out and cannot sign in again. Continue?'
+      : 'Are you sure you want to delete this user?';
+    if (confirm(question)) {
+      this.rbacService.deleteUser(user.id).subscribe({
+        next: () => {
+          toast.success('User deleted.');
+          if (isSelf) {
+            this.authService.logout();
+            return;
+          }
+          this.refresh();
+        },
+        error: (err) => toast.error('Failed to delete the user.', { description: errorDetail(err) })
+      });
     }
   }
+}
+
+/** The JSON:API error detail of a failed request, or its HTTP status text. */
+function errorDetail(err: unknown): string | undefined {
+  const e = err as { error?: { errors?: { detail?: string; title?: string }[] }; statusText?: string };
+  const first = e?.error?.errors?.[0];
+  return first?.detail ?? first?.title ?? e?.statusText ?? undefined;
 }

@@ -94,11 +94,26 @@ describe('UserEditorDialogComponent', () => {
       expect(fetchRoles).toHaveBeenCalledTimes(1);
     });
 
+    it('warns before deactivating the own account', () => {
+      openEdit(self, [1]);
+      component.form.controls.is_active.setValue(false);
+      fixture.detectChanges();
+      expect(component.deactivatesSelf()).toBe(true);
+      expect(fixture.nativeElement.textContent).toContain('You are deactivating your own account.');
+
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      component.save();
+      expect(confirmSpy.mock.calls[0][0]).toContain('deactivate your own account');
+      http.expectNone('/api/v1/iam/users/1');
+    });
+
     it('does not warn when editing another administrator', () => {
       openEdit({ ...user, id: 2, username: 'ADMIN2' }, [1]);
       roleCheckbox('ADMIN').click();
+      component.form.controls.is_active.setValue(false);
       fixture.detectChanges();
       expect(component.removesOwnAdmin()).toBe(false);
+      expect(component.deactivatesSelf()).toBe(false);
       expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
     });
   });

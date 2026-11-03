@@ -4,11 +4,10 @@ import { Router } from '@angular/router';
 import { tap, catchError, map, switchMap } from 'rxjs/operators';
 import { Observable, throwError, of, from } from 'rxjs';
 import {
-  startAuthentication,
-  startRegistration,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
 } from '@simplewebauthn/browser';
+import { WEBAUTHN } from './webauthn';
 import { environment } from '../../../environments/environment';
 
 export interface SessionResponse {
@@ -48,6 +47,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private document = inject(DOCUMENT);
+  private webAuthn = inject(WEBAUTHN);
 
   // State via Angular Signals
   private readonly _sessionToken = signal<string | null>(sessionStorage.getItem('mitm_session_token'));
@@ -119,7 +119,7 @@ export class AuthService {
   loginWithPasskey(username: string): Observable<SessionResponse> {
     return this.http.post<LoginStartResponse>(`/api/v1/auth/webauthn/login/start`, { username }).pipe(
       switchMap(start =>
-        from(startAuthentication({ optionsJSON: start.public_key_options.publicKey })).pipe(
+        from(this.webAuthn.startAuthentication({ optionsJSON: start.public_key_options.publicKey })).pipe(
           switchMap(credential =>
             this.http.post<SessionResponse>(`/api/v1/auth/webauthn/login/finish`, {
               ceremony_id: start.ceremony_id,
@@ -139,7 +139,7 @@ export class AuthService {
   registerPasskey(request: RegistrationRequest): Observable<RegistrationResult> {
     return this.http.post<RegistrationStartResponse>(`/api/v1/auth/webauthn/register/start`, request).pipe(
       switchMap(start =>
-        from(startRegistration({ optionsJSON: start.public_key_options.publicKey })).pipe(
+        from(this.webAuthn.startRegistration({ optionsJSON: start.public_key_options.publicKey })).pipe(
           switchMap(credential =>
             this.http.post<RegistrationResult>(`/api/v1/auth/webauthn/register/finish`, {
               ceremony_id: start.ceremony_id,
