@@ -1,10 +1,11 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { HlmToaster } from '@spartan-ng/helm/sonner';
 import { AuthService } from '../core/auth/auth.service';
 import packageJson from '../../../package.json';
 
 @Component({
-  imports: [RouterModule],
+  imports: [RouterModule, HlmToaster],
   selector: 'app-layout',
   styleUrl: './layout.css',
   templateUrl: './layout.html',

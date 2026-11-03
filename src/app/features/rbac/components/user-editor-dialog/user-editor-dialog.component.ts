@@ -1,4 +1,5 @@
 import { Component, computed, input, output, inject, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
@@ -84,6 +85,13 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
             <label for="isActive" class="text-sm font-medium">Is Active</label>
           </div>
 
+          @if (deactivatesSelf()) {
+            <p class="text-sm text-destructive border border-destructive/50 rounded p-2" role="alert">
+              You are deactivating your own account. You will not be able to sign in again
+              until another administrator activates it.
+            </p>
+          }
+
           @if (errorMessage(); as err) {
             <p class="text-sm text-destructive">{{ err }}</p>
           }
@@ -124,15 +132,24 @@ export class UserEditorDialogComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   private initialRoleIds = signal<Set<number>>(new Set());
 
+  private isActive = toSignal(this.form.controls.is_active.valueChanges, { initialValue: this.form.controls.is_active.value });
+
+  /** True when the edited user is the signed-in user. */
+  private isSelf = computed(() => {
+    const u = this.user();
+    return !!u && u.username.toUpperCase() === (this.authService.osUser() ?? '').toUpperCase();
+  });
+
   /** True when the signed-in administrator is about to remove the ADMIN role from their own account. */
   removesOwnAdmin = computed(() => {
-    const u = this.user();
     const adminRole = this.roles().find(r => r.name.toUpperCase() === 'ADMIN');
-    return !!u && !!adminRole
-      && u.username.toUpperCase() === (this.authService.osUser() ?? '').toUpperCase()
+    return this.isSelf() && !!adminRole
       && this.initialRoleIds().has(adminRole.id)
       && !this.selectedRoleIds().has(adminRole.id);
   });
+
+  /** True when the signed-in user is about to deactivate their own active account. */
+  deactivatesSelf = computed(() => this.isSelf() && !!this.user()?.is_active && this.isActive() === false);
 
   ngOnInit() {
     const u = this.user();
@@ -176,13 +193,17 @@ export class UserEditorDialogComponent implements OnInit {
     const roleIds = this.roles().map(r => r.id).filter(id => this.selectedRoleIds().has(id));
     const initial = this.initialRoleIds();
     const rolesChanged = roleIds.length !== initial.size || roleIds.some(id => !initial.has(id));
-    if (this.removesOwnAdmin() && !confirm('Remove the ADMIN role from your own account? You will lose access to User Management.')) {
+    const lockouts = [
+      this.removesOwnAdmin() ? 'remove the ADMIN role from your own account and lose access to User Management' : null,
+      this.deactivatesSelf() ? 'deactivate your own account and not be able to sign in again' : null,
+    ].filter(Boolean);
+    if (lockouts.length && !confirm(`You are about to ${lockouts.join(' and ')}. Continue?`)) {
       return;
     }
     const assign = (userId: number): Observable<void | null> =>
       rolesChanged ? this.rbacService.assignRoles(userId, roleIds) : of(null);
 
-    const removedOwnAdmin = this.removesOwnAdmin();
+    const reloadOwnRoles = lockouts.length > 0;
     let userSaved = false;
     const request = u
       ? this.rbacService.updateUser(u.id, val).pipe(switchMap(() => { userSaved = true; return assign(u.id); }))
@@ -192,7 +213,7 @@ export class UserEditorDialogComponent implements OnInit {
     this.errorMessage.set(null);
     request.subscribe({
       next: () => {
-        if (removedOwnAdmin) {
+        if (reloadOwnRoles) {
           // Update the own session roles right away so navigation and guards reflect the lost access.
           this.authService.fetchRoles().subscribe();
         }

@@ -5,6 +5,15 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.12.0] - 2026-11-03
+
+### Added
+- **Toast Notifications**: Spartan-NG Sonner (`hlm-toaster`, follows the selected theme) in the layout. User Management shows a toast with the backend error detail when loading users, deleting a user or terminating a session fails, and a confirmation toast on success.
+- **Self-Lockout Warnings**: Besides removing the own ADMIN role, deactivating the own account in the Edit User dialog now shows a warning and asks for confirmation. Deleting the own account asks with a dedicated question and signs out afterwards.
+
+### Fixed
+- **Unit Tests**: The suite is deterministic again. `@simplewebauthn/browser` was mocked per spec file with `vi.mock`, and the mocks leaked between files in the bundled test build, so passkey tests failed intermittently. `AuthService` and the login page now get the WebAuthn functions via the `WEBAUTHN` injection token. `app.spec` no longer expects the CLI scaffold heading.
+
 ## [v1.11.0] - 2026-11-03
 
 ### Added
