@@ -3,6 +3,8 @@ export interface User {
   username: string;
   first_name: string;
   last_name: string;
+  department: string | null;
+  email: string | null;
   is_active: boolean;
 }
 

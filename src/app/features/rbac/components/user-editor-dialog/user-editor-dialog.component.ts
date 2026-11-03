@@ -39,13 +39,26 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
             <input formControlName="last_name" type="text" class="border border-border rounded p-2 bg-background text-foreground">
           </div>
 
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium">Department</label>
+            <input formControlName="department" type="text" class="border border-border rounded p-2 bg-background text-foreground">
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium">eMail</label>
+            <input formControlName="email" type="email" class="border border-border rounded p-2 bg-background text-foreground">
+            @if (form.controls.email.invalid) {
+              <p class="text-xs text-destructive">Enter a valid e-mail address.</p>
+            }
+          </div>
+
           <div class="flex items-center gap-2 mt-2">
             <input formControlName="is_active" type="checkbox" id="isActive" class="rounded border-border bg-background">
             <label for="isActive" class="text-sm font-medium">Is Active</label>
           </div>
 
           <div class="flex justify-end gap-2 mt-4">
-            <button type="button" hlmBtn variant="outline" (click)="close.emit()">Cancel</button>
+            <button type="button" hlmBtn variant="outline" (click)="close.emit()">Close</button>
             <button type="submit" hlmBtn variant="default" [disabled]="form.invalid">Save</button>
           </div>
         </form>
@@ -66,6 +79,8 @@ export class UserEditorDialogComponent implements OnInit {
     password: [''],
     first_name: [''],
     last_name: [''],
+    department: [''],
+    email: ['', Validators.email],
     is_active: [true]
   });
 
@@ -76,6 +91,8 @@ export class UserEditorDialogComponent implements OnInit {
         username: u.username,
         first_name: u.first_name,
         last_name: u.last_name,
+        department: u.department ?? '',
+        email: u.email ?? '',
         is_active: u.is_active
       });
       // password is not required when editing

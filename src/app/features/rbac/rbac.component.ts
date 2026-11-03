@@ -30,6 +30,8 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
               <th class="p-2">Username</th>
               <th class="p-2">First Name</th>
               <th class="p-2">Last Name</th>
+              <th class="p-2">Department</th>
+              <th class="p-2">eMail</th>
               <th class="p-2">Active</th>
               <th class="p-2">Actions</th>
             </tr>
@@ -41,6 +43,8 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
                 <td class="p-2">{{ user.username }}</td>
                 <td class="p-2">{{ user.first_name }}</td>
                 <td class="p-2">{{ user.last_name }}</td>
+                <td class="p-2">{{ user.department || '-' }}</td>
+                <td class="p-2">{{ user.email || '-' }}</td>
                 <td class="p-2">
                   <span class="px-2 py-1 rounded text-xs font-bold"
                         [class]="user.is_active ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'">
