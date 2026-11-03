@@ -23,7 +23,8 @@
       "@spartan-ng/helm/separator": ["./libs/ui/separator/src/index.ts"],
       "@spartan-ng/helm/input": ["./libs/ui/input/src/index.ts"],
       "@spartan-ng/helm/tabs": ["./libs/ui/tabs/src/index.ts"],
-      "@spartan-ng/helm/sonner": ["./libs/ui/sonner/src/index.ts"]
+      "@spartan-ng/helm/sonner": ["./libs/ui/sonner/src/index.ts"],
+      "@spartan-ng/helm/select": ["./libs/ui/select/src/index.ts"]
     }
   },
   "angularCompilerOptions": {
