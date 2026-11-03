@@ -13,7 +13,7 @@ import { ConfirmService } from '../../core/confirm/confirm.service';
 import { UserEditorDialogComponent } from './components/user-editor-dialog/user-editor-dialog.component';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { filterAndSortUsers, RoleFilter, SortDirection, SortKey, StatusFilter } from './user-table';
+import { filterAndSortUsers, isPendingApproval, RoleFilter, SortDirection, SortKey, StatusFilter } from './user-table';
 
 @Component({
   selector: 'app-rbac',
@@ -57,11 +57,18 @@ import { filterAndSortUsers, RoleFilter, SortDirection, SortKey, StatusFilter } 
             <hlm-select-item value="all">All users</hlm-select-item>
             <hlm-select-item value="active">Active</hlm-select-item>
             <hlm-select-item value="inactive">Inactive</hlm-select-item>
+            <hlm-select-item value="pending">Pending approval</hlm-select-item>
           </hlm-select-content>
         </hlm-select>
 
         @if (isFiltered()) {
           <button hlmBtn variant="ghost" size="sm" (click)="resetFilters()">Reset filters</button>
+        }
+        @if (pendingCount() > 0 && statusFilter() !== 'pending') {
+          <button hlmBtn variant="outline" size="sm" class="border-amber-500/60 text-amber-600 dark:text-amber-400"
+            (click)="statusFilter.set('pending')">
+            {{ pendingCount() }} pending approval
+          </button>
         }
         <span class="ml-auto text-sm text-muted-foreground" aria-live="polite">
           {{ visibleUsers().length }} of {{ users().length }} users
@@ -95,12 +102,19 @@ import { filterAndSortUsers, RoleFilter, SortDirection, SortKey, StatusFilter } 
                 <td class="p-2">{{ user.email || '-' }}</td>
                 <td class="p-2 font-tron">{{ roleNames(user.id) }}</td>
                 <td class="p-2">
-                  <span class="px-2 py-1 rounded text-xs font-bold"
-                        [class]="user.is_active ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'">
-                    {{ user.is_active ? 'Yes' : 'No' }}
-                  </span>
+                  @if (isPending(user)) {
+                    <span class="px-2 py-1 rounded text-xs font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400">Pending</span>
+                  } @else {
+                    <span class="px-2 py-1 rounded text-xs font-bold"
+                          [class]="user.is_active ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'">
+                      {{ user.is_active ? 'Yes' : 'No' }}
+                    </span>
+                  }
                 </td>
                 <td class="p-2 flex gap-2">
+                  @if (isPending(user)) {
+                    <button hlmBtn size="sm" (click)="openApproveUser(user)">Approve</button>
+                  }
                   <button hlmBtn variant="outline" size="sm" (click)="openEditUser(user)">Edit</button>
                   <button hlmBtn variant="destructive" size="sm" (click)="terminateSession(user.id)">Terminate Session</button>
                   <button hlmBtn variant="destructive" size="sm" (click)="deleteUser(user)">Delete</button>
@@ -120,10 +134,11 @@ import { filterAndSortUsers, RoleFilter, SortDirection, SortKey, StatusFilter } 
       <hlm-dialog [state]="showDialog() ? 'open' : 'closed'" (closed)="closeDialog()">
         <hlm-dialog-content class="sm:max-w-lg max-h-[90vh] overflow-y-auto" *brnDialogContent="let ctx">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle>{{ selectedUser() ? 'Edit User' : 'Add User' }}</h3>
+            <h3 hlmDialogTitle>{{ approveMode() ? 'Approve User' : selectedUser() ? 'Edit User' : 'Add User' }}</h3>
           </hlm-dialog-header>
           <app-user-editor-dialog
             [user]="selectedUser()"
+            [approve]="approveMode()"
             [roles]="roles()"
             (close)="closeDialog()"
             (saved)="closeDialog(); refresh()">
@@ -173,7 +188,10 @@ export class RbacComponent implements OnInit {
 
   readonly roleFilterLabel = (value: RoleFilter) => value === 'all' ? 'All roles' : value === 'none' ? 'No role' : value;
   readonly statusFilterLabel = (value: StatusFilter) =>
-    ({ all: 'All users', active: 'Active', inactive: 'Inactive' })[value];
+    ({ all: 'All users', active: 'Active', inactive: 'Inactive', pending: 'Pending approval' })[value];
+
+  pendingCount = computed(() => this.users().filter(u => this.isPending(u)).length);
+  approveMode = signal(false);
 
   showDialog = signal(false);
   selectedUser = signal<User | null>(null);
@@ -256,17 +274,31 @@ export class RbacComponent implements OnInit {
 
   openAddUser() {
     this.selectedUser.set(null);
+    this.approveMode.set(false);
     this.showDialog.set(true);
   }
 
   openEditUser(user: User) {
     this.selectedUser.set(user);
+    this.approveMode.set(false);
     this.showDialog.set(true);
+  }
+
+  /** Opens the user dialog with "Is Active" preset; saving activates the user and assigns the selected roles. */
+  openApproveUser(user: User) {
+    this.selectedUser.set(user);
+    this.approveMode.set(true);
+    this.showDialog.set(true);
+  }
+
+  isPending(user: User): boolean {
+    return isPendingApproval(user, this.roleNameList(user.id));
   }
 
   closeDialog() {
     this.showDialog.set(false);
     this.selectedUser.set(null);
+    this.approveMode.set(false);
   }
 
   async terminateSession(id: number) {

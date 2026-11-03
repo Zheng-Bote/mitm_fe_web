@@ -4,10 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/auth/auth.service';
 
+import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmLabel } from '@spartan-ng/helm/label';
+import { HlmInput } from '@spartan-ng/helm/input';
+
 @Component({
   selector: 'app-upload',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HlmButton, HlmLabel, HlmInput],
   template: `
     <div class="max-w-2xl mx-auto p-6 bg-card text-card-foreground shadow-lg rounded-xl border border-border mt-8">
       <h2 class="text-2xl font-bold font-tron text-primary mb-6">Manual File Upload</h2>
@@ -16,25 +20,23 @@ import { AuthService } from '../../core/auth/auth.service';
         <form (ngSubmit)="onSubmit()" class="space-y-6">
           
           <div>
-            <label class="block text-sm font-medium mb-2">Topic Name</label>
-            <input 
+            <label hlmLabel class="mb-2" for="upload-topic">Topic Name</label>
+            <input hlmInput id="upload-topic"
               type="text" 
               [(ngModel)]="topic" 
               name="topic" 
               required
               placeholder="e.g. users, transactions"
-              class="w-full bg-background border border-border rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
 
           <div>
-            <label class="block text-sm font-medium mb-2">Source File (CSV / XLSX)</label>
-            <input 
+            <label hlmLabel class="mb-2" for="upload-file">Source File (CSV / XLSX)</label>
+            <input hlmInput id="upload-file"
               type="file" 
               (change)="onFileSelected($event)" 
               accept=".csv,.xlsx" 
               required
-              class="w-full bg-background border border-border rounded px-4 py-2 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
             />
           </div>
 
@@ -44,10 +46,10 @@ import { AuthService } from '../../core/auth/auth.service';
             </div>
           }
 
-          <button 
-            type="submit" 
+          <button hlmBtn
+            type="submit"
+            class="w-full font-tron uppercase"
             [disabled]="!topic() || !selectedFile() || isUploading()"
-            class="w-full py-2 px-4 rounded font-tron uppercase text-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {{ isUploading() ? 'Uploading...' : 'Upload File' }}
           </button>

@@ -1,5 +1,5 @@
 import { User } from '../../core/models/user.model';
-import { filterAndSortUsers, UserTableState } from './user-table';
+import { filterAndSortUsers, isPendingApproval, UserTableState } from './user-table';
 
 describe('filterAndSortUsers', () => {
   const users: User[] = [
@@ -34,6 +34,14 @@ describe('filterAndSortUsers', () => {
     expect(ids({ role: 'USER' })).toEqual([1]);
     expect(ids({ role: 'VIEWER' })).toEqual([2]);
     expect(ids({ role: 'none' })).toEqual([3]);
+  });
+
+  it('treats inactive users without roles as pending approval', () => {
+    expect(isPendingApproval(users[2], [])).toBe(true);
+    expect(isPendingApproval(users[2], ['VIEWER'])).toBe(false);
+    expect(isPendingApproval(users[2], null)).toBe(false);
+    expect(isPendingApproval(users[0], [])).toBe(false);
+    expect(ids({ status: 'pending' })).toEqual([3]);
   });
 
   it('combines search, status and role filters', () => {

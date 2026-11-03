@@ -27,7 +27,7 @@ describe('TransformationErrorsComponent', () => {
       b.textContent?.includes(label),
     )!;
   const checkbox = (index: number) =>
-    element().querySelectorAll<HTMLInputElement>('input[type="checkbox"]')[index];
+    element().querySelectorAll<HTMLButtonElement>('button[role="checkbox"]')[index];
   const settle = async () => {
     fixture.detectChanges();
     await fixture.whenStable();

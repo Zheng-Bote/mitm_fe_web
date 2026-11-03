@@ -6,6 +6,9 @@ import { AuditLogEntry } from './models/audit-log.model';
 import { AuditLogsTableComponent } from './components/audit-logs-table/audit-logs-table.component';
 import { ExportReportDialogComponent, ExportReportParams } from './components/export-report-dialog/export-report-dialog.component';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCheckbox } from '@spartan-ng/helm/checkbox';
+import { HlmLabel } from '@spartan-ng/helm/label';
+import { HlmInput } from '@spartan-ng/helm/input';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -13,6 +16,9 @@ import { Subscription } from 'rxjs';
   templateUrl: './audit-logs.component.html',
   imports: [
     FormsModule,
+    HlmCheckbox,
+    HlmLabel,
+    HlmInput,
     AuditLogsTableComponent,
     ExportReportDialogComponent,
     ...HlmButtonImports

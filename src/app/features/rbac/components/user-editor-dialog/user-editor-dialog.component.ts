@@ -18,6 +18,12 @@ import { ConfirmService } from '../../../../core/confirm/confirm.service';
   imports: [ReactiveFormsModule, HlmButtonImports, HlmCheckbox, HlmDialogImports, HlmFieldImports, HlmInput],
   template: `
     <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+      @if (approve()) {
+        <p class="text-sm text-muted-foreground">
+          Approving activates the account and assigns the selected roles. Select at least one role.
+        </p>
+      }
+
       <hlm-field>
         <label hlmFieldLabel for="user-username">Username</label>
         <input hlmInput id="user-username" formControlName="username" type="text" autocomplete="off" [readonly]="!!user()" />
@@ -96,7 +102,9 @@ import { ConfirmService } from '../../../../core/confirm/confirm.service';
 
       <hlm-dialog-footer>
         <button type="button" hlmBtn variant="outline" (click)="close.emit()">Cancel</button>
-        <button type="submit" hlmBtn [disabled]="form.invalid || !rolesLoaded() || isSaving()">Save</button>
+        <button type="submit" hlmBtn [disabled]="form.invalid || !rolesLoaded() || isSaving() || missingApprovalRole()">
+          {{ approve() ? 'Approve' : 'Save' }}
+        </button>
       </hlm-dialog-footer>
     </form>
   `
@@ -104,6 +112,8 @@ import { ConfirmService } from '../../../../core/confirm/confirm.service';
 export class UserEditorDialogComponent implements OnInit {
   user = input<User | null>(null);
   roles = input<Role[]>([]);
+  /** Approval of a pending user: "Is Active" is preset and at least one role is required. */
+  approve = input(false);
   close = output<void>();
   saved = output<void>();
 
@@ -145,6 +155,8 @@ export class UserEditorDialogComponent implements OnInit {
       && !this.selectedRoleIds().has(adminRole.id);
   });
 
+  missingApprovalRole = computed(() => this.approve() && this.selectedRoleIds().size === 0);
+
   /** True when the signed-in user is about to deactivate their own active account. */
   deactivatesSelf = computed(() => this.isSelf() && !!this.user()?.is_active && this.isActive() === false);
 
@@ -166,7 +178,7 @@ export class UserEditorDialogComponent implements OnInit {
         last_name: u.last_name,
         department: u.department ?? '',
         email: u.email ?? '',
-        is_active: u.is_active
+        is_active: this.approve() ? true : u.is_active
       });
       // password is not required when editing
     } else {
@@ -183,7 +195,7 @@ export class UserEditorDialogComponent implements OnInit {
   }
 
   async save() {
-    if (this.form.invalid || !this.rolesLoaded() || this.isSaving()) return;
+    if (this.form.invalid || !this.rolesLoaded() || this.isSaving() || this.missingApprovalRole()) return;
 
     const val = this.form.value as Partial<User>;
     const u = this.user();

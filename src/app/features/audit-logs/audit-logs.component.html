@@ -4,30 +4,26 @@
       Refresh Job Audits
     </button>
     
-    <label class="flex items-center gap-2 text-sm font-medium">
-      <input type="checkbox" [ngModel]="autoRefresh()" (ngModelChange)="autoRefresh.set($event)" [disabled]="!hasLoaded()" class="h-4 w-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900 disabled:cursor-not-allowed disabled:opacity-50" />
-      Auto-Refresh (5s)
-    </label>
+    <div class="flex items-center gap-2 text-sm">
+      <hlm-checkbox inputId="audit-logs-auto-refresh" [checked]="autoRefresh()" (checkedChange)="autoRefresh.set($event)" [disabled]="!hasLoaded()" />
+      <label hlmLabel for="audit-logs-auto-refresh">Auto-Refresh (5s)</label>
+    </div>
 
     <div class="flex items-center gap-2 border-l pl-4 ml-2">
-      <label class="flex items-center gap-2 text-sm font-medium">
-        <input type="checkbox" [ngModel]="useDateRange()" (ngModelChange)="useDateRange.set($event); useDateRange() ? fetchData() : null" class="h-4 w-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900" />
-        Filter by Date
-      </label>
+      <hlm-checkbox inputId="audit-logs-date-filter" [checked]="useDateRange()" (checkedChange)="useDateRange.set($event); useDateRange() ? fetchData() : null" />
+      <label hlmLabel for="audit-logs-date-filter">Filter by Date</label>
       
-      <input type="date"
+      <input hlmInput type="date" class="w-auto" aria-label="Start date"
              [ngModel]="startDateStr()"
              (ngModelChange)="startDateStr.set($event); useDateRange() ? fetchData() : null"
-             [disabled]="!useDateRange()"
-             class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50" />
+             [disabled]="!useDateRange()" />
       
       <span class="text-sm">to</span>
       
-      <input type="date"
+      <input hlmInput type="date" class="w-auto" aria-label="End date"
              [ngModel]="endDateStr()"
              (ngModelChange)="endDateStr.set($event); useDateRange() ? fetchData() : null"
-             [disabled]="!useDateRange()"
-             class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50" />
+             [disabled]="!useDateRange()" />
     </div>
 
     <div class="flex-grow"></div>

@@ -2,6 +2,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmLabel } from '@spartan-ng/helm/label';
+import { HlmInput } from '@spartan-ng/helm/input';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 
 export interface ExportReportParams {
@@ -16,6 +18,8 @@ export interface ExportReportParams {
   templateUrl: './export-report-dialog.component.html',
   imports: [
     FormsModule,
+    HlmLabel,
+    HlmInput,
     ...HlmDialogImports,
     ...HlmButtonImports,
     ...BrnDialogImports

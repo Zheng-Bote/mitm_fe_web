@@ -5,7 +5,16 @@ import { User } from '../../core/models/user.model';
 
 export type SortKey = 'id' | 'username' | 'first_name' | 'last_name' | 'department' | 'email' | 'roles' | 'is_active';
 export type SortDirection = 'asc' | 'desc';
-export type StatusFilter = 'all' | 'active' | 'inactive';
+export type StatusFilter = 'all' | 'active' | 'inactive' | 'pending';
+
+/**
+ * A user waiting for approval: inactive and without any role. The backend has no persistent pending
+ * state; self-registered users start inactive without roles, while deactivated users usually keep
+ * their roles. Users whose roles are not known (`null`) are not pending.
+ */
+export function isPendingApproval(user: User, roleNames: string[] | null): boolean {
+  return !user.is_active && roleNames !== null && roleNames.length === 0;
+}
 /** `all`, `none` (users without a role) or an upper-case role name. */
 export type RoleFilter = string;
 
@@ -31,6 +40,7 @@ export function filterAndSortUsers(
   const filtered = users.filter(u => {
     if (state.status === 'active' && !u.is_active) return false;
     if (state.status === 'inactive' && u.is_active) return false;
+    if (state.status === 'pending' && !isPendingApproval(u, roleNames(u.id))) return false;
     if (state.role !== 'all') {
       const names = roleNames(u.id);
       if (names === null) return false;
