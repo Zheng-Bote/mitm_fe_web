@@ -32,6 +32,7 @@ describe('Layout', () => {
     fixture.detectChanges();
     expect(component.showUserSettings()).toBe(true);
     expect(fixture.nativeElement.textContent).toContain('User Settings');
+    expect(fixture.nativeElement.textContent).toContain('eMail');
 
     component.closeUserSettings();
     fixture.detectChanges();

@@ -56,6 +56,7 @@ export class AuthService {
   private readonly _firstName = signal<string | null>(null);
   private readonly _lastName = signal<string | null>(null);
   private readonly _department = signal<string | null>(null);
+  private readonly _email = signal<string | null>(null);
 
   // Computed properties
   public sessionToken = computed(() => this._sessionToken());
@@ -64,6 +65,7 @@ export class AuthService {
   public firstName = computed(() => this._firstName());
   public lastName = computed(() => this._lastName());
   public department = computed(() => this._department());
+  public email = computed(() => this._email());
   public isAuthenticated = computed(() => !!this._sessionToken());
 
   private renewalTimer: any;
@@ -190,7 +192,7 @@ export class AuthService {
       return of([]);
     }
     
-    return this.http.get<{ roles: string[], os_user: string, first_name?: string | null, last_name?: string | null, department?: string | null }>(`/api/v1/auth/me`).pipe(
+    return this.http.get<{ roles: string[], os_user: string, first_name?: string | null, last_name?: string | null, department?: string | null, email?: string | null }>(`/api/v1/auth/me`).pipe(
       tap(response => {
         const uppercaseRoles = (response.roles || []).map(r => r.toUpperCase());
         this._roles.set(uppercaseRoles);
@@ -200,6 +202,7 @@ export class AuthService {
         this._firstName.set(response.first_name ?? null);
         this._lastName.set(response.last_name ?? null);
         this._department.set(response.department ?? null);
+        this._email.set(response.email ?? null);
       }),
       map(response => response.roles || []),
       catchError(err => {
@@ -239,6 +242,7 @@ export class AuthService {
     this._firstName.set(null);
     this._lastName.set(null);
     this._department.set(null);
+    this._email.set(null);
     sessionStorage.removeItem('mitm_session_token');
     this.router.navigate(['/login']);
   }
