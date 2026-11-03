@@ -2,9 +2,11 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { HlmButton } from '@spartan-ng/helm/button';
 
 @Component({
   selector: 'app-dashboard',
+  imports: [HlmButton],
   styleUrl: './dashboard.css',
   templateUrl: './dashboard.html',
 })

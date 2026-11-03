@@ -8,20 +8,20 @@
     
     <div class="grid gap-4 py-4">
       <div class="grid grid-cols-4 items-center gap-4">
-        <label for="jobName" class="text-right text-sm font-medium">Job Name</label>
-        <input id="jobName" [(ngModel)]="jobName" class="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" placeholder="Optional..." />
+        <label hlmLabel for="jobName" class="justify-end">Job Name</label>
+        <input hlmInput id="jobName" [(ngModel)]="jobName" class="col-span-3" placeholder="Optional..." />
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
-        <label for="topic" class="text-right text-sm font-medium">Topic</label>
-        <input id="topic" [(ngModel)]="topic" class="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" placeholder="Optional..." />
+        <label hlmLabel for="topic" class="justify-end">Topic</label>
+        <input hlmInput id="topic" [(ngModel)]="topic" class="col-span-3" placeholder="Optional..." />
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
-        <label for="startDate" class="text-right text-sm font-medium">Start Date</label>
-        <input id="startDate" type="date" [(ngModel)]="startDateStr" class="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+        <label hlmLabel for="startDate" class="justify-end">Start Date</label>
+        <input hlmInput id="startDate" type="date" [(ngModel)]="startDateStr" class="col-span-3" />
       </div>
       <div class="grid grid-cols-4 items-center gap-4">
-        <label for="endDate" class="text-right text-sm font-medium">End Date</label>
-        <input id="endDate" type="date" [(ngModel)]="endDateStr" class="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" />
+        <label hlmLabel for="endDate" class="justify-end">End Date</label>
+        <input hlmInput id="endDate" type="date" [(ngModel)]="endDateStr" class="col-span-3" />
       </div>
     </div>
 

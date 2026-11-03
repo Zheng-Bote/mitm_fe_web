@@ -5,6 +5,9 @@ import { TransformationErrorsService } from './services/transformation-errors.se
 import { TransformationErrorEntry } from './models/transformation-error.model';
 import { TransformationErrorsTableComponent } from './components/transformation-errors-table/transformation-errors-table.component';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCheckbox } from '@spartan-ng/helm/checkbox';
+import { HlmLabel } from '@spartan-ng/helm/label';
+import { HlmInput } from '@spartan-ng/helm/input';
 import { saveAs } from 'file-saver';
 import { Subscription } from 'rxjs';
 
@@ -13,6 +16,9 @@ import { Subscription } from 'rxjs';
   imports: [
     CommonModule,
     FormsModule,
+    HlmCheckbox,
+    HlmLabel,
+    HlmInput,
     TransformationErrorsTableComponent,
     HlmButtonImports
   ],
@@ -27,27 +33,21 @@ import { Subscription } from 'rxjs';
         </button>
 
         <div class="flex items-center gap-2 border-l pl-4">
-          <label class="flex items-center gap-2 text-sm font-medium">
-            <input type="checkbox"
-                   [ngModel]="useDateRange()"
-                   (ngModelChange)="useDateRange.set($event); useDateRange() ? refresh() : null"
-                   class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
-            Filter by Date
-          </label>
+          <hlm-checkbox inputId="transformation-errors-date-filter" [checked]="useDateRange()"
+            (checkedChange)="useDateRange.set($event); useDateRange() ? refresh() : null" />
+          <label hlmLabel for="transformation-errors-date-filter">Filter by Date</label>
 
-          <input type="date"
+          <input hlmInput type="date" class="w-auto" aria-label="Start date"
                  [ngModel]="startDateStr()"
                  (ngModelChange)="startDateStr.set($event); useDateRange() ? refresh() : null"
-                 [disabled]="!useDateRange()"
-                 class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50" />
+                 [disabled]="!useDateRange()" />
 
           <span class="text-sm">to</span>
 
-          <input type="date"
+          <input hlmInput type="date" class="w-auto" aria-label="End date"
                  [ngModel]="endDateStr()"
                  (ngModelChange)="endDateStr.set($event); useDateRange() ? refresh() : null"
-                 [disabled]="!useDateRange()"
-                 class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50" />
+                 [disabled]="!useDateRange()" />
         </div>
 
         <button hlmBtn variant="default" (click)="exportCsv()" [disabled]="errors().length === 0">

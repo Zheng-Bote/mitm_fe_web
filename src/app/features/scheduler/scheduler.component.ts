@@ -6,6 +6,8 @@ import { SchedulerService } from './services/scheduler.service';
 import { Job } from './models/job.model';
 import { SchedulerTableComponent } from './components/scheduler-table/scheduler-table.component';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { HlmCheckbox } from '@spartan-ng/helm/checkbox';
+import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { JobEditorDialogComponent } from './components/job-editor-dialog/job-editor-dialog.component';
@@ -16,7 +18,7 @@ import { ConfirmService } from '../../core/confirm/confirm.service';
 @Component({
   selector: 'app-scheduler',
   templateUrl: './scheduler.component.html',
-  imports: [SchedulerTableComponent, HlmButton, ...HlmDialogImports, ...BrnDialogImports, JobEditorDialogComponent],
+  imports: [SchedulerTableComponent, HlmButton, HlmCheckbox, HlmLabel, ...HlmDialogImports, ...BrnDialogImports, JobEditorDialogComponent],
   host: {
     class: 'block p-4'
   }

@@ -1,9 +1,10 @@
 import { Component, inject, signal, effect, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { SystemLogsService, SystemLogItem } from '../../core/services/system-logs.service';
 import { SystemLogsTableComponent } from './components/system-logs-table/system-logs-table.component';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
+import { HlmCheckbox } from '@spartan-ng/helm/checkbox';
+import { HlmLabel } from '@spartan-ng/helm/label';
 import { saveAs } from 'file-saver';
 import { Subscription, interval } from 'rxjs';
 
@@ -11,7 +12,8 @@ import { Subscription, interval } from 'rxjs';
   selector: 'app-system-logs',
   imports: [
     CommonModule,
-    FormsModule,
+    HlmCheckbox,
+    HlmLabel,
     SystemLogsTableComponent,
     HlmButtonImports
   ],
@@ -25,14 +27,11 @@ import { Subscription, interval } from 'rxjs';
           {{ isLoading() ? 'Refreshing...' : 'Refresh System Logs' }}
         </button>
 
-        <label class="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox"
-                 [ngModel]="autoRefresh()"
-                 (ngModelChange)="autoRefresh.set($event)"
-                 [disabled]="!hasLoaded()"
-                 class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50" />
-          Auto-Refresh (5s)
-        </label>
+        <div class="flex items-center gap-2 text-sm">
+          <hlm-checkbox inputId="system-logs-auto-refresh" [checked]="autoRefresh()" (checkedChange)="autoRefresh.set($event)"
+            [disabled]="!hasLoaded()" />
+          <label hlmLabel for="system-logs-auto-refresh">Auto-Refresh (5s)</label>
+        </div>
 
         <button hlmBtn variant="default" (click)="exportCsv()" [disabled]="logs().length === 0">
           Export CSV

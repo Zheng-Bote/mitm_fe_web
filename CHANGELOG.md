@@ -5,6 +5,14 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.15.0] - 2026-11-03
+
+### Added
+- **Approve Pending Users**: Inactive users without any role count as "pending approval" (the backend has no persistent pending state; self-registered users start inactive without roles). They show a "Pending" badge and an "Approve" button that opens the user dialog in approval mode ("Is Active" preset, at least one role required). The status filter offers "Pending approval", and a "N pending approval" button above the table applies it.
+
+### Changed
+- **Spartan-NG Controls**: The remaining native checkboxes (Auto-Refresh and "Filter by Date" in System Logs, Audit Logs, Transformation Errors and Scheduler) are `hlm-checkbox` with linked labels; date inputs, the Audit "Export Report" dialog and the Manual Upload form use `hlmInput`/`hlmLabel`; the Dashboard "Refresh Data" and Upload buttons use `hlmBtn`. Hard-coded `gray`/`slate`/`blue` colors are replaced by theme tokens.
+
 ## [v1.14.0] - 2026-11-03
 
 ### Added

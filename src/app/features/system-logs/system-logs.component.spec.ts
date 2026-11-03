@@ -25,7 +25,7 @@ describe('SystemLogsComponent', () => {
     Array.from(element().querySelectorAll('button')).find((b) =>
       b.textContent?.includes('Refresh'),
     )!;
-  const autoRefreshBox = () => element().querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+  const autoRefreshBox = () => element().querySelector<HTMLButtonElement>('button[role="checkbox"]')!;
 
   beforeEach(async () => {
     getLogs = vi.fn(() => of([LOG]));

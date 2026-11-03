@@ -5,14 +5,10 @@
     Refresh Jobs
   </button>
   
-  <label class="flex items-center gap-2 cursor-pointer">
-    <input 
-      type="checkbox" 
-      class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-      [checked]="autoRefreshEnabled()" 
-      (change)="toggleAutoRefresh()" />
-    <span class="text-sm font-medium">Auto-Refresh (5s)</span>
-  </label>
+  <div class="flex items-center gap-2 text-sm">
+    <hlm-checkbox inputId="scheduler-auto-refresh" [checked]="autoRefreshEnabled()" (checkedChange)="toggleAutoRefresh()" />
+    <label hlmLabel for="scheduler-auto-refresh">Auto-Refresh (5s)</label>
+  </div>
   
   <div class="flex-1"></div>
 

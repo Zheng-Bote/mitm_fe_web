@@ -1,7 +1,7 @@
 <div class="space-y-6">
   <div class="flex items-center justify-between">
     <h2 class="text-2xl font-bold tracking-tight">Dashboard Overview</h2>
-    <button (click)="fetchData()" class="px-4 py-2 bg-slate-900 text-white rounded-md hover:bg-slate-800 transition shadow-sm text-sm font-medium">
+    <button hlmBtn (click)="fetchData()">
       Refresh Data
     </button>
   </div>
@@ -23,7 +23,7 @@
         <h3 class="tracking-tight text-sm font-medium">Engine Info</h3>
       </div>
       <div class="p-6 pt-0">
-        <div class="text-sm text-slate-600 whitespace-pre-line">{{ engineInfo() }}</div>
+        <div class="text-sm text-muted-foreground whitespace-pre-line">{{ engineInfo() }}</div>
       </div>
     </div>
 
@@ -33,7 +33,7 @@
         <h3 class="tracking-tight text-sm font-medium">Database</h3>
       </div>
       <div class="p-6 pt-0">
-        <div class="text-sm text-slate-600 whitespace-pre-line">{{ dbInfo() }}</div>
+        <div class="text-sm text-muted-foreground whitespace-pre-line">{{ dbInfo() }}</div>
       </div>
     </div>
   </div>
@@ -59,7 +59,7 @@
         <div class="text-2xl font-bold"
              [class.text-green-600]="dlqCursors() === 0"
              [class.text-red-600]="dlqCursors() !== 0 && dlqCursors() !== 'Loading...' && dlqCursors() !== '-'"
-             [class.text-gray-400]="dlqCursors() === 'Loading...' || dlqCursors() === '-'">
+             [class.text-muted-foreground]="dlqCursors() === 'Loading...' || dlqCursors() === '-'">
           {{ dlqCursors() }}
         </div>
       </div>
@@ -104,7 +104,7 @@
         <div class="text-2xl font-bold"
              [class.text-green-600]="transformationErrors() === 0"
              [class.text-red-600]="transformationErrors() !== 0 && transformationErrors() !== 'Loading...' && transformationErrors() !== '-'"
-             [class.text-gray-400]="transformationErrors() === 'Loading...' || transformationErrors() === '-'">
+             [class.text-muted-foreground]="transformationErrors() === 'Loading...' || transformationErrors() === '-'">
           {{ transformationErrors() }}
         </div>
       </div>
