@@ -1,6 +1,6 @@
 {
   "name": "mitm-fe-web",
-  "version": "1.7.0",
+  "version": "1.9.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -26,6 +26,8 @@
     "@tailwindcss/postcss": "^4.3.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cron-parser": "^5.10.3",
+    "cronstrue": "^3.38.0",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "flatbuffers": "^25.9.23",
