@@ -5,6 +5,11 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.14.0] - 2026-11-03
+
+### Added
+- **User Management Search, Filter and Sort**: A search field filters the users table by username, first and last name, department and e-mail (case-insensitive). Spartan-NG selects filter by role (incl. "No role") and status (active/inactive); "Reset filters" clears them, and a counter shows "N of M users". All columns except Actions sort by clicking the header (toggles ascending/descending, `aria-sort`); empty values always sort last. Adds the Spartan-NG `select` helm component.
+
 ## [v1.13.0] - 2026-11-03
 
 ### Changed

@@ -108,6 +108,61 @@ describe('RbacComponent', () => {
     http.expectNone({ method: 'DELETE', url: '/api/v1/iam/users/2' });
   });
 
+  const usernames = (): string[] =>
+    Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('tbody tr'))
+      .map(r => r.querySelectorAll('td')[1]?.textContent?.trim() ?? '');
+
+  it('filters the table by the search field and shows the count', () => {
+    flushUserRoles();
+    const search: HTMLInputElement = fixture.nativeElement.querySelector('input[type="search"]');
+    search.value = 'muster';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(usernames()).toEqual(['Q225265']);
+    expect(fixture.nativeElement.textContent).toContain('1 of 3 users');
+
+    search.value = 'nobody';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('No users match the filters.');
+  });
+
+  it('sorts by a column header and toggles the direction', () => {
+    flushUserRoles();
+    const header = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('thead th'))
+      .find(th => th.textContent?.includes('Username'))!;
+
+    header.querySelector('button')!.click();
+    fixture.detectChanges();
+    expect(header.getAttribute('aria-sort')).toBe('ascending');
+    expect(usernames()).toEqual(['ADMIN', 'NOROLE', 'Q225265']);
+
+    header.querySelector('button')!.click();
+    fixture.detectChanges();
+    expect(header.getAttribute('aria-sort')).toBe('descending');
+    expect(usernames()).toEqual(['Q225265', 'NOROLE', 'ADMIN']);
+  });
+
+  it('filters by role and status and resets the filters', () => {
+    flushUserRoles();
+    const component = fixture.componentInstance;
+    component.roleFilter.set('VIEWER');
+    fixture.detectChanges();
+    expect(usernames()).toEqual(['Q225265']);
+
+    component.roleFilter.set('all');
+    component.statusFilter.set('inactive');
+    fixture.detectChanges();
+    expect(usernames()).toEqual(['NOROLE']);
+
+    const reset = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('button'))
+      .find(b => b.textContent?.trim() === 'Reset filters')!;
+    reset.click();
+    fixture.detectChanges();
+    expect(usernames()).toEqual(['ADMIN', 'Q225265', 'NOROLE']);
+  });
+
   it('shows the role names of every user in the Roles column', () => {
     expect(fixture.nativeElement.querySelector('thead').textContent).toContain('Roles');
     expect(rolesCell(0)).toBe('…');

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { toast } from '@spartan-ng/brain/sonner';
@@ -11,10 +11,13 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { ConfirmService } from '../../core/confirm/confirm.service';
 import { UserEditorDialogComponent } from './components/user-editor-dialog/user-editor-dialog.component';
+import { HlmInput } from '@spartan-ng/helm/input';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { filterAndSortUsers, RoleFilter, SortDirection, SortKey, StatusFilter } from './user-table';
 
 @Component({
   selector: 'app-rbac',
-  imports: [CommonModule, HlmButtonImports, HlmDialogImports, BrnDialogImports, UserEditorDialogComponent],
+  imports: [CommonModule, HlmButtonImports, HlmDialogImports, BrnDialogImports, HlmInput, HlmSelectImports, UserEditorDialogComponent],
   template: `
     <div class="flex flex-col h-full p-4 gap-4">
       <div class="flex items-center gap-4 border-b pb-4">
@@ -29,23 +32,60 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
         </button>
       </div>
 
+      <div class="flex flex-wrap items-center gap-3" role="search">
+        <input hlmInput type="search" class="w-64" placeholder="Search name, department, e-mail…" aria-label="Search users"
+          [value]="search()" (input)="search.set($any($event.target).value)" />
+
+        <hlm-select [value]="roleFilter()" (valueChange)="roleFilter.set($event ?? 'all')" [itemToString]="roleFilterLabel">
+          <hlm-select-trigger class="w-40" aria-label="Filter by role">
+            <hlm-select-value />
+          </hlm-select-trigger>
+          <hlm-select-content *hlmSelectPortal>
+            <hlm-select-item value="all">All roles</hlm-select-item>
+            @for (role of roleNameOptions(); track role) {
+              <hlm-select-item [value]="role">{{ role }}</hlm-select-item>
+            }
+            <hlm-select-item value="none">No role</hlm-select-item>
+          </hlm-select-content>
+        </hlm-select>
+
+        <hlm-select [value]="statusFilter()" (valueChange)="statusFilter.set($event ?? 'all')" [itemToString]="statusFilterLabel">
+          <hlm-select-trigger class="w-36" aria-label="Filter by status">
+            <hlm-select-value />
+          </hlm-select-trigger>
+          <hlm-select-content *hlmSelectPortal>
+            <hlm-select-item value="all">All users</hlm-select-item>
+            <hlm-select-item value="active">Active</hlm-select-item>
+            <hlm-select-item value="inactive">Inactive</hlm-select-item>
+          </hlm-select-content>
+        </hlm-select>
+
+        @if (isFiltered()) {
+          <button hlmBtn variant="ghost" size="sm" (click)="resetFilters()">Reset filters</button>
+        }
+        <span class="ml-auto text-sm text-muted-foreground" aria-live="polite">
+          {{ visibleUsers().length }} of {{ users().length }} users
+        </span>
+      </div>
+
       <div class="flex-1 overflow-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="border-b">
-              <th class="p-2">ID</th>
-              <th class="p-2">Username</th>
-              <th class="p-2">First Name</th>
-              <th class="p-2">Last Name</th>
-              <th class="p-2">Department</th>
-              <th class="p-2">eMail</th>
-              <th class="p-2">Roles</th>
-              <th class="p-2">Active</th>
+              @for (col of columns; track col.key) {
+                <th class="p-2" [attr.aria-sort]="ariaSort(col.key)">
+                  <button type="button" class="inline-flex items-center gap-1 font-semibold hover:text-primary"
+                    (click)="sortBy(col.key)">
+                    {{ col.label }}
+                    <span aria-hidden="true" class="text-xs w-3">{{ sortIndicator(col.key) }}</span>
+                  </button>
+                </th>
+              }
               <th class="p-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            @for (user of users(); track user.id) {
+            @for (user of visibleUsers(); track user.id) {
               <tr class="border-b hover:bg-muted/50">
                 <td class="p-2">{{ user.id }}</td>
                 <td class="p-2">{{ user.username }}</td>
@@ -64,6 +104,12 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
                   <button hlmBtn variant="outline" size="sm" (click)="openEditUser(user)">Edit</button>
                   <button hlmBtn variant="destructive" size="sm" (click)="terminateSession(user.id)">Terminate Session</button>
                   <button hlmBtn variant="destructive" size="sm" (click)="deleteUser(user)">Delete</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td class="p-4 text-center text-muted-foreground" [attr.colspan]="columns.length + 1">
+                  @if (users().length) { No users match the filters. } @else { No users. }
                 </td>
               </tr>
             }
@@ -98,6 +144,37 @@ export class RbacComponent implements OnInit {
   userRoleIds = signal<Map<number, number[] | null>>(new Map());
   isLoading = signal(false);
   
+  readonly columns: { key: SortKey; label: string }[] = [
+    { key: 'id', label: 'ID' },
+    { key: 'username', label: 'Username' },
+    { key: 'first_name', label: 'First Name' },
+    { key: 'last_name', label: 'Last Name' },
+    { key: 'department', label: 'Department' },
+    { key: 'email', label: 'eMail' },
+    { key: 'roles', label: 'Roles' },
+    { key: 'is_active', label: 'Active' },
+  ];
+
+  search = signal('');
+  roleFilter = signal<RoleFilter>('all');
+  statusFilter = signal<StatusFilter>('all');
+  sortKey = signal<SortKey>('id');
+  sortDirection = signal<SortDirection>('asc');
+
+  roleNameOptions = computed(() => this.roles().map(r => r.name.toUpperCase()));
+  isFiltered = computed(() => !!this.search().trim() || this.roleFilter() !== 'all' || this.statusFilter() !== 'all');
+  visibleUsers = computed(() => filterAndSortUsers(this.users(), id => this.roleNameList(id), {
+    search: this.search(),
+    role: this.roleFilter(),
+    status: this.statusFilter(),
+    sortKey: this.sortKey(),
+    sortDirection: this.sortDirection(),
+  }));
+
+  readonly roleFilterLabel = (value: RoleFilter) => value === 'all' ? 'All roles' : value === 'none' ? 'No role' : value;
+  readonly statusFilterLabel = (value: StatusFilter) =>
+    ({ all: 'All users', active: 'Active', inactive: 'Inactive' })[value];
+
   showDialog = signal(false);
   selectedUser = signal<User | null>(null);
 
@@ -135,6 +212,38 @@ export class RbacComponent implements OnInit {
         this.userRoleIds.update(m => new Map(m).set(user.id, roleIds));
       });
     }
+  }
+
+  /** Upper-case role names of the user, or `null` while loading or when they could not be read. */
+  private roleNameList(userId: number): string[] | null {
+    const roleIds = this.userRoleIds().get(userId);
+    if (roleIds === undefined || roleIds === null) return null;
+    return this.roles().filter(r => roleIds.includes(r.id)).map(r => r.name.toUpperCase());
+  }
+
+  sortBy(key: SortKey) {
+    if (this.sortKey() === key) {
+      this.sortDirection.update(d => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      this.sortKey.set(key);
+      this.sortDirection.set('asc');
+    }
+  }
+
+  ariaSort(key: SortKey): 'ascending' | 'descending' | null {
+    if (this.sortKey() !== key) return null;
+    return this.sortDirection() === 'asc' ? 'ascending' : 'descending';
+  }
+
+  sortIndicator(key: SortKey): string {
+    if (this.sortKey() !== key) return '';
+    return this.sortDirection() === 'asc' ? '▲' : '▼';
+  }
+
+  resetFilters() {
+    this.search.set('');
+    this.roleFilter.set('all');
+    this.statusFilter.set('all');
   }
 
   roleNames(userId: number): string {
