@@ -1,8 +1,11 @@
-import { Component, input, output, inject, OnInit } from '@angular/core';
+import { Component, computed, input, output, inject, OnInit, signal } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RbacService } from '../../../../core/services/rbac.service';
-import { User } from '../../../../core/models/user.model';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { Role, User } from '../../../../core/models/user.model';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 
 @Component({
@@ -52,14 +55,42 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
             }
           </div>
 
+          <fieldset class="flex flex-col gap-2">
+            <legend class="text-sm font-medium mb-2">Roles</legend>
+            @if (rolesLoaded()) {
+              @for (role of roles(); track role.id) {
+                <label class="flex items-center gap-2 text-sm font-tron">
+                  <input type="checkbox" class="rounded border-border bg-background"
+                    [checked]="selectedRoleIds().has(role.id)" (change)="toggleRole(role.id)">
+                  {{ role.name.toUpperCase() }}
+                </label>
+              } @empty {
+                <p class="text-xs text-foreground/70">No roles available.</p>
+              }
+            } @else {
+              <p class="text-xs text-foreground/70">Loading roles…</p>
+            }
+          </fieldset>
+
+          @if (removesOwnAdmin()) {
+            <p class="text-sm text-destructive border border-destructive/50 rounded p-2" role="alert">
+              You are removing the ADMIN role from your own account. You will lose access to User Management
+              and cannot undo this yourself.
+            </p>
+          }
+
           <div class="flex items-center gap-2 mt-2">
             <input formControlName="is_active" type="checkbox" id="isActive" class="rounded border-border bg-background">
             <label for="isActive" class="text-sm font-medium">Is Active</label>
           </div>
 
+          @if (errorMessage(); as err) {
+            <p class="text-sm text-destructive">{{ err }}</p>
+          }
+
           <div class="flex justify-end gap-2 mt-4">
             <button type="button" hlmBtn variant="outline" (click)="close.emit()">Close</button>
-            <button type="submit" hlmBtn variant="default" [disabled]="form.invalid">Save</button>
+            <button type="submit" hlmBtn variant="default" [disabled]="form.invalid || !rolesLoaded() || isSaving()">Save</button>
           </div>
         </form>
       </div>
@@ -68,10 +99,12 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 })
 export class UserEditorDialogComponent implements OnInit {
   user = input<User | null>(null);
+  roles = input<Role[]>([]);
   close = output<void>();
   saved = output<void>();
 
   private rbacService = inject(RbacService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
 
   form = this.fb.group({
@@ -84,9 +117,35 @@ export class UserEditorDialogComponent implements OnInit {
     is_active: [true]
   });
 
+  selectedRoleIds = signal<Set<number>>(new Set());
+  /** False while the role assignment of the edited user is loading or could not be read. */
+  rolesLoaded = signal(true);
+  isSaving = signal(false);
+  errorMessage = signal<string | null>(null);
+  private initialRoleIds = signal<Set<number>>(new Set());
+
+  /** True when the signed-in administrator is about to remove the ADMIN role from their own account. */
+  removesOwnAdmin = computed(() => {
+    const u = this.user();
+    const adminRole = this.roles().find(r => r.name.toUpperCase() === 'ADMIN');
+    return !!u && !!adminRole
+      && u.username.toUpperCase() === (this.authService.osUser() ?? '').toUpperCase()
+      && this.initialRoleIds().has(adminRole.id)
+      && !this.selectedRoleIds().has(adminRole.id);
+  });
+
   ngOnInit() {
     const u = this.user();
     if (u) {
+      this.rolesLoaded.set(false);
+      this.rbacService.getUser(u.id).subscribe({
+        next: detail => {
+          this.initialRoleIds.set(new Set(detail.role_ids));
+          this.selectedRoleIds.set(new Set(detail.role_ids));
+          this.rolesLoaded.set(true);
+        },
+        error: () => this.errorMessage.set('Failed to load the roles of this user.')
+      });
       this.form.patchValue({
         username: u.username,
         first_name: u.first_name,
@@ -101,16 +160,53 @@ export class UserEditorDialogComponent implements OnInit {
     }
   }
 
+  toggleRole(roleId: number) {
+    this.selectedRoleIds.update(ids => {
+      const next = new Set(ids);
+      if (!next.delete(roleId)) next.add(roleId);
+      return next;
+    });
+  }
+
   save() {
-    if (this.form.invalid) return;
+    if (this.form.invalid || !this.rolesLoaded() || this.isSaving()) return;
 
     const val = this.form.value as Partial<User>;
     const u = this.user();
-
-    if (u) {
-      this.rbacService.updateUser(u.id, val).subscribe(() => this.saved.emit());
-    } else {
-      this.rbacService.addUser(val).subscribe(() => this.saved.emit());
+    const roleIds = this.roles().map(r => r.id).filter(id => this.selectedRoleIds().has(id));
+    const initial = this.initialRoleIds();
+    const rolesChanged = roleIds.length !== initial.size || roleIds.some(id => !initial.has(id));
+    if (this.removesOwnAdmin() && !confirm('Remove the ADMIN role from your own account? You will lose access to User Management.')) {
+      return;
     }
+    const assign = (userId: number): Observable<void | null> =>
+      rolesChanged ? this.rbacService.assignRoles(userId, roleIds) : of(null);
+
+    const removedOwnAdmin = this.removesOwnAdmin();
+    let userSaved = false;
+    const request = u
+      ? this.rbacService.updateUser(u.id, val).pipe(switchMap(() => { userSaved = true; return assign(u.id); }))
+      : this.rbacService.addUser(val).pipe(switchMap(created => { userSaved = true; return assign(created.id); }));
+
+    this.isSaving.set(true);
+    this.errorMessage.set(null);
+    request.subscribe({
+      next: () => {
+        if (removedOwnAdmin) {
+          // Update the own session roles right away so navigation and guards reflect the lost access.
+          this.authService.fetchRoles().subscribe();
+        }
+        this.saved.emit();
+      },
+      error: () => {
+        if (userSaved) {
+          // The user exists now; saving again would try to create it twice.
+          this.errorMessage.set('The user was saved, but assigning the roles failed. Edit the user to assign the roles again.');
+          return;
+        }
+        this.isSaving.set(false);
+        this.errorMessage.set('Saving failed. Please check the input and try again.');
+      }
+    });
   }
 }

@@ -5,6 +5,14 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.11.0] - 2026-11-03
+
+### Added
+- **User Role Assignment**: The User Management page shows a **Roles** column (role names per user, `-` without roles, `n/a` if they could not be read), and the Add/Edit User dialog assigns roles via checkboxes (`POST /api/v1/iam/assign-role`). Editing preselects the current roles and only reassigns them when the selection changed; a new user gets its roles right after creation. Removing the ADMIN role from the own account shows a warning and asks for confirmation; afterwards the own session roles are reloaded. Spec `mitm-2/specs/features/user-role-assignment/user-role-assignment.sdd`. Requires core-layer `mitm_http-server` 3.2.0 for roles on Add User.
+
+### Fixed
+- **User Management Dialog**: The Add/Edit User dialog now closes after a successful save instead of staying open, which allowed creating the same user twice.
+
 ## [v1.10.0] - 2026-11-03
 
 ### Added
