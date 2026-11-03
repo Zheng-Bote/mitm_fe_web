@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Scheduler Cron Editor**: The "Add Job" / "Edit Job" dialog replaces the raw cron text field with a schedule editor (spec `specs/cron-editor.md`). Tabs for every N minutes, hourly, daily, weekly and monthly build the 5-field cron expression; "Advanced" keeps free input. Existing jobs open in the matching tab, other expressions unchanged in "Advanced". A plain-English description (`cronstrue`) and the next 3 run times in UTC (`cron-parser`) are shown before saving. Expressions without exactly 5 fields, with invalid values or with numeric weekdays (the scheduler counts 1 = SUN, unlike Unix cron) are rejected. New jobs default to daily at 00:00 UTC.
 
+## [v1.8.0] - 2026-11-03
+
+### Added
+- **User Settings eMail**: The User Settings dialog shows the e-mail address of the signed-in user below the department (`-` when not set).
+
+### Fixed
+- **User Settings Department**: The department is now filled from `GET /api/v1/auth/me` instead of always showing `-`. Requires core-layer `mitm_http-server` 3.1.0.
+
 ## [v1.7.0] - 2026-10-29
 
 ### Added
