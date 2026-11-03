@@ -1,7 +1,9 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { RbacService } from '../../core/services/rbac.service';
-import { User } from '../../core/models/user.model';
+import { Role, User } from '../../core/models/user.model';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { UserEditorDialogComponent } from './components/user-editor-dialog/user-editor-dialog.component';
 
@@ -32,6 +34,7 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
               <th class="p-2">Last Name</th>
               <th class="p-2">Department</th>
               <th class="p-2">eMail</th>
+              <th class="p-2">Roles</th>
               <th class="p-2">Active</th>
               <th class="p-2">Actions</th>
             </tr>
@@ -45,6 +48,7 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
                 <td class="p-2">{{ user.last_name }}</td>
                 <td class="p-2">{{ user.department || '-' }}</td>
                 <td class="p-2">{{ user.email || '-' }}</td>
+                <td class="p-2 font-tron">{{ roleNames(user.id) }}</td>
                 <td class="p-2">
                   <span class="px-2 py-1 rounded text-xs font-bold"
                         [class]="user.is_active ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'">
@@ -65,8 +69,9 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
       @if (showDialog()) {
         <app-user-editor-dialog 
           [user]="selectedUser()" 
+          [roles]="roles()"
           (close)="closeDialog()" 
-          (saved)="refresh()">
+          (saved)="closeDialog(); refresh()">
         </app-user-editor-dialog>
       }
     </div>
@@ -76,6 +81,9 @@ export class RbacComponent implements OnInit {
   private rbacService = inject(RbacService);
 
   users = signal<User[]>([]);
+  roles = signal<Role[]>([]);
+  /** Role ids per user id; missing while loading, `null` when they could not be read. */
+  userRoleIds = signal<Map<number, number[] | null>>(new Map());
   isLoading = signal(false);
   
   showDialog = signal(false);
@@ -89,16 +97,39 @@ export class RbacComponent implements OnInit {
     if (this.isLoading()) return;
     this.isLoading.set(true);
     
-    this.rbacService.getUsers().subscribe({
-      next: (data) => {
-        this.users.set(data);
+    forkJoin([this.rbacService.getUsers(), this.rbacService.getRoles()]).subscribe({
+      next: ([users, roles]) => {
+        this.users.set(users);
+        this.roles.set(roles);
+        this.userRoleIds.set(new Map());
         this.isLoading.set(false);
+        this.loadUserRoles(users);
       },
       error: (err) => {
         console.error('Failed to fetch users:', err);
         this.isLoading.set(false);
       }
     });
+  }
+
+  /** Role assignments are stored encrypted per user, so they are read one user at a time. */
+  private loadUserRoles(users: User[]) {
+    for (const user of users) {
+      this.rbacService.getUser(user.id).pipe(
+        map(detail => detail.role_ids),
+        catchError(() => of(null))
+      ).subscribe(roleIds => {
+        this.userRoleIds.update(m => new Map(m).set(user.id, roleIds));
+      });
+    }
+  }
+
+  roleNames(userId: number): string {
+    const roleIds = this.userRoleIds().get(userId);
+    if (roleIds === undefined) return '…';
+    if (roleIds === null) return 'n/a';
+    const names = this.roles().filter(r => roleIds.includes(r.id)).map(r => r.name.toUpperCase());
+    return names.length ? names.join(', ') : '-';
   }
 
   openAddUser() {
