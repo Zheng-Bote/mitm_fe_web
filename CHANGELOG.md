@@ -5,6 +5,14 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.8.0] - 2026-11-03
+
+### Added
+- **User Settings eMail**: The User Settings dialog shows the e-mail address of the signed-in user below the department (`-` when not set).
+
+### Fixed
+- **User Settings Department**: The department is now filled from `GET /api/v1/auth/me` instead of always showing `-`. Requires core-layer `mitm_http-server` 3.1.0.
+
 ## [v1.7.0] - 2026-10-29
 
 ### Added

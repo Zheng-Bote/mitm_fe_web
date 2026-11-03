@@ -135,6 +135,11 @@
         </div>
 
         <div class="flex justify-between border-b border-border pb-2">
+          <span class="text-foreground/70">eMail</span>
+          <span class="font-medium">{{ authService.email() || '-' }}</span>
+        </div>
+
+        <div class="flex justify-between border-b border-border pb-2">
           <span class="text-foreground/70">Roles</span>
           <span class="font-medium font-tron">
             {{ authService.roles().length ? authService.roles().join(', ') : '-' }}
