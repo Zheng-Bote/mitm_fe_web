@@ -144,6 +144,24 @@ describe('RbacComponent', () => {
     expect(usernames()).toEqual(['Q225265', 'NOROLE', 'ADMIN']);
   });
 
+  it('marks inactive users without roles as pending and offers Approve', () => {
+    flushUserRoles();
+    fixture.detectChanges();
+    const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+    expect(rows[2].textContent).toContain('Pending');
+    expect(Array.from<HTMLButtonElement>(rows[2].querySelectorAll('button')).map(b => b.textContent?.trim())).toContain('Approve');
+    expect(rows[1].textContent).not.toContain('Approve');
+
+    const pendingButton = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('button'))
+      .find(b => b.textContent?.trim() === '1 pending approval')!;
+    pendingButton.click();
+    fixture.detectChanges();
+    expect(usernames()).toEqual(['NOROLE']);
+
+    fixture.componentInstance.openApproveUser(users[2]);
+    expect(fixture.componentInstance.approveMode()).toBe(true);
+  });
+
   it('filters by role and status and resets the filters', () => {
     flushUserRoles();
     const component = fixture.componentInstance;

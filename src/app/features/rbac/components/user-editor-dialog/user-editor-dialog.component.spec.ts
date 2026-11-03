@@ -186,6 +186,26 @@ describe('UserEditorDialogComponent', () => {
     assign.flush(null);
   });
 
+  it('approves a pending user: activates it and requires a role', () => {
+    fixture.componentRef.setInput('approve', true);
+    openEdit({ ...user, is_active: false }, []);
+    const submit: HTMLButtonElement = fixture.nativeElement.querySelector('button[type="submit"]');
+
+    expect(component.form.value.is_active).toBe(true);
+    expect(submit.textContent?.trim()).toBe('Approve');
+    expect(submit.disabled).toBe(true);
+
+    roleCheckbox('VIEWER').click();
+    fixture.detectChanges();
+    expect(submit.disabled).toBe(false);
+    component.save();
+
+    const put = http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/7' });
+    expect(put.request.body.is_active).toBe(true);
+    put.flush(null);
+    expect(http.expectOne('/api/v1/iam/assign-role').request.body).toEqual({ user_id: 7, role_ids: [3] });
+  });
+
   it('keeps saving disabled when the roles of the user cannot be loaded', () => {
     fixture.componentRef.setInput('user', user);
     fixture.detectChanges();
