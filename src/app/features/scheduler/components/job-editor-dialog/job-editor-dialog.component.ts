@@ -6,11 +6,12 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Job } from '../../models/job.model';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmCheckbox } from '@spartan-ng/helm/checkbox';
+import { CronEditorComponent } from '../cron-editor/cron-editor.component';
 
 @Component({
   selector: 'app-job-editor-dialog',
   templateUrl: './job-editor-dialog.component.html',
-  imports: [ReactiveFormsModule, HlmButton, HlmCheckbox],
+  imports: [ReactiveFormsModule, HlmButton, HlmCheckbox, CronEditorComponent],
   host: {
     class: 'block w-full'
   }
@@ -43,7 +44,7 @@ export class JobEditorDialogComponent {
         // Name is the unique identifier for API routes, so disable it during edit
         this.form.controls.name.disable();
       } else {
-        this.form.reset({ id: 0, enabled: true });
+        this.form.reset({ id: 0, cron_expr: '0 0 * * *', enabled: true });
         this.form.controls.name.enable();
       }
     });

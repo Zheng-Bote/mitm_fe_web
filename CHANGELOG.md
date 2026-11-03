@@ -5,6 +5,11 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.9.0] - 2026-11-03
+
+### Added
+- **Scheduler Cron Editor**: The "Add Job" / "Edit Job" dialog replaces the raw cron text field with a schedule editor (spec `specs/cron-editor.md`). Tabs for every N minutes, hourly, daily, weekly and monthly build the 5-field cron expression; "Advanced" keeps free input. Existing jobs open in the matching tab, other expressions unchanged in "Advanced". A plain-English description (`cronstrue`) and the next 3 run times in UTC (`cron-parser`) are shown before saving. Expressions without exactly 5 fields, with invalid values or with numeric weekdays (the scheduler counts 1 = SUN, unlike Unix cron) are rejected. New jobs default to daily at 00:00 UTC.
+
 ## [v1.8.0] - 2026-11-03
 
 ### Added

@@ -1,0 +1,77 @@
+<hlm-tabs [tab]="schedule().mode" (tabActivated)="selectMode($event)" class="w-full">
+  <hlm-tabs-list class="w-full flex-wrap" aria-label="Schedule type">
+    @for (t of tabs; track t.mode) {
+      <button type="button" [hlmTabsTrigger]="t.mode" [disabled]="disabled()">{{ t.label }}</button>
+    }
+  </hlm-tabs-list>
+
+  <div [hlmTabsContent]="schedule().mode" class="flex flex-col gap-3 pt-2">
+    @switch (schedule().mode) {
+      @case ('minutes') {
+        <label class="flex items-center gap-2 text-sm">
+          Every
+          <input hlmInput type="number" min="1" max="59" class="w-20" aria-label="Interval in minutes"
+            [value]="schedule().interval" [disabled]="disabled()" (input)="setNumber('interval', $event)" />
+          minutes
+        </label>
+      }
+      @case ('hourly') {
+        <label class="flex items-center gap-2 text-sm">
+          Every hour at minute
+          <input hlmInput type="number" min="0" max="59" class="w-20" aria-label="Minute"
+            [value]="schedule().minute" [disabled]="disabled()" (input)="setNumber('minute', $event)" />
+        </label>
+      }
+      @case ('advanced') {
+        <input hlmInput type="text" class="font-mono" aria-label="Cron expression" placeholder="*/5 * * * *"
+          [value]="schedule().expression" [disabled]="disabled()" (input)="setExpression($event)" />
+        <p class="text-xs text-muted-foreground">
+          5 fields: minute hour day-of-month month day-of-week. Use weekday names (MON–SUN).
+        </p>
+      }
+      @default {
+        @if (schedule().mode === 'weekly') {
+          <div class="flex flex-wrap gap-1" role="group" aria-label="Weekdays">
+            @for (day of weekdays; track day) {
+              <button type="button" hlmBtn size="sm" [variant]="schedule().days.includes(day) ? 'default' : 'outline'"
+                [attr.aria-pressed]="schedule().days.includes(day)" [disabled]="disabled()" (click)="toggleDay(day)">
+                {{ day }}
+              </button>
+            }
+          </div>
+        }
+        @if (schedule().mode === 'monthly') {
+          <label class="flex items-center gap-2 text-sm">
+            On day
+            <input hlmInput type="number" min="1" max="31" class="w-20" aria-label="Day of month"
+              [value]="schedule().dayOfMonth" [disabled]="disabled()" (input)="setNumber('dayOfMonth', $event)" />
+            of the month
+          </label>
+        }
+        <label class="flex items-center gap-2 text-sm">
+          At
+          <input hlmInput type="time" class="w-32" aria-label="Time (UTC)"
+            [value]="time()" [disabled]="disabled()" (input)="setTime($event)" />
+          UTC
+        </label>
+      }
+    }
+
+    <div class="rounded-md border border-border p-3 text-sm" aria-live="polite">
+      @if (error(); as err) {
+        <p class="text-destructive">{{ err }}</p>
+      } @else {
+        <p class="font-medium">{{ description() }} (UTC)</p>
+        <p class="mt-1 font-mono text-xs text-muted-foreground">{{ expression() }}</p>
+        @if (runs().length) {
+          <p class="mt-2 text-xs text-muted-foreground">Next runs:</p>
+          <ul class="font-mono text-xs">
+            @for (run of runs(); track run.getTime()) {
+              <li>{{ formatRun(run) }}</li>
+            }
+          </ul>
+        }
+      }
+    </div>
+  </div>
+</hlm-tabs>
