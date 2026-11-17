@@ -7,10 +7,10 @@ import { WebAuthnError } from '@simplewebauthn/browser';
 import { authErrorMessage } from './auth-error-message';
 
 describe('authErrorMessage', () => {
-  it('returns the JSON:API error detail from the backend', () => {
+  it('returns the error envelope detail from the backend', () => {
     const err = new HttpErrorResponse({
       status: 403,
-      error: { errors: [{ status: '403', title: 'Forbidden', detail: 'Account is inactive pending administrator approval.' }] }
+      error: { id: 'x', status: 403, code: 'USER_INACTIVE', title: 'Forbidden', detail: 'Account is inactive pending administrator approval.', meta: {}, data: null }
     });
     expect(authErrorMessage(err)).toBe('Account is inactive pending administrator approval.');
   });

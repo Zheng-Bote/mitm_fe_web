@@ -7,6 +7,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmInput } from '@spartan-ng/helm/input';
+import { apiErrorDetail } from '../../core/api-error';
 
 @Component({
   selector: 'app-upload',
@@ -114,7 +115,7 @@ export class UploadComponent {
       error: (err) => {
         this.isUploading.set(false);
         this.isError.set(true);
-        this.message.set(err.error?.error || 'Failed to upload file.');
+        this.message.set(apiErrorDetail(err) || 'Failed to upload file.');
       }
     });
   }

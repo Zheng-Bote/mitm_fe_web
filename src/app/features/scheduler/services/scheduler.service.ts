@@ -5,6 +5,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Job } from '../models/job.model';
 import { firstValueFrom } from 'rxjs';
+import { apiErrorDetail } from '../../../core/api-error';
 
 @Injectable({ providedIn: 'root' })
 export class SchedulerService {
@@ -33,12 +34,12 @@ export class SchedulerService {
 
   private formatError(err: any, fallback: string): string {
     if (err?.status === 403) return 'Permission Denied (403): You need ADMIN rights.';
-    return err?.error?.message || err?.message || fallback;
+    return apiErrorDetail(err) || err?.message || fallback;
   }
 
   async addJob(job: Job): Promise<void> {
     try {
-      await firstValueFrom(this.http.post(this.API_URL, [job]));
+      await firstValueFrom(this.http.post(this.API_URL, job));
       await this.loadJobs();
     } catch (err: any) {
       this.error.set(this.formatError(err, 'Failed to add job'));
@@ -48,7 +49,7 @@ export class SchedulerService {
 
   async editJob(job: Job): Promise<void> {
     try {
-      await firstValueFrom(this.http.post(this.API_URL, [job]));
+      await firstValueFrom(this.http.put(`${this.API_URL}/${encodeURIComponent(job.name)}`, job));
       await this.loadJobs();
     } catch (err: any) {
       this.error.set(this.formatError(err, 'Failed to update job'));

@@ -28,7 +28,7 @@ export class RbacService {
 
   /** Replaces all role assignments of the user. */
   assignRoles(userId: number, roleIds: number[]): Observable<void> {
-    return this.http.post<void>('/api/v1/iam/assign-role', { user_id: userId, role_ids: roleIds });
+    return this.http.put<void>(`/api/v1/iam/users/${userId}/roles`, { role_ids: roleIds });
   }
 
   updateUser(id: number, user: Partial<User>): Observable<void> {
