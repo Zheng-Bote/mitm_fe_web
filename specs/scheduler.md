@@ -21,7 +21,8 @@ As an ADMIN user, I want to:
 
 ## 4. API Endpoints to consume
 - `GET /api/v1/jobs` - List jobs
-- `POST /api/v1/jobs` - Add/Edit job(s)
+- `POST /api/v1/jobs` - Add a job (`201`, `409` if the name exists)
+- `PUT /api/v1/jobs/{jobName}` - Edit a job (incl. `args`, `restart_on_exit`, see `issue-29-job-args.md`)
 - `DELETE /api/v1/jobs/{jobName}` - Delete job
 - `POST /api/v1/jobs/{jobName}/stop` - Stop running job
 - `POST /api/v1/jobs/{jobName}/execute` - Trigger job immediately

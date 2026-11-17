@@ -14,6 +14,7 @@ import { JobEditorDialogComponent } from './components/job-editor-dialog/job-edi
 
 import { AuthService } from '../../core/auth/auth.service';
 import { ConfirmService } from '../../core/confirm/confirm.service';
+import { toast } from '@spartan-ng/brain/sonner';
 
 @Component({
   selector: 'app-scheduler',
@@ -98,8 +99,9 @@ export class SchedulerComponent implements OnDestroy {
         await this.schedulerService.addJob(job);
       }
       this.closeDialog();
-    } catch (e) {
-      // Error is caught and displayed by the service
+    } catch {
+      // The dialog stays open; the service holds the server's error detail.
+      toast.error('Failed to save the job.', { description: this.error() ?? undefined });
     }
   }
   

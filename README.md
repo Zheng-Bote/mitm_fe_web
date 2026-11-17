@@ -11,7 +11,7 @@ This project strictly adheres to a **Feature-Based Directory Structure**.
 
 ## Features
 - **Dashboard**: High-level system overview and metrics.
-- **Scheduler**: Job listing and execution control.
+- **Scheduler**: Job listing and execution control; create and edit jobs incl. JSON args and "Restart on exit".
 - **Audit Logs**: Job execution audit trails with Excel export (via FlatBuffers for high performance).
 - **System Logs**: System event logging with CSV export and real-time auto-refresh.
 - **Admin Logs**: Admin action audit trails with CSV export.

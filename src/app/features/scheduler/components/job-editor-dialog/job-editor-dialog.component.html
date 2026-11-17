@@ -15,9 +15,24 @@
     <app-cron-editor formControlName="cron_expr" aria-labelledby="cron_expr_label" />
   </div>
 
+  <hlm-field>
+    <label hlmFieldLabel for="args">JSON Args</label>
+    <textarea hlmInput id="args" formControlName="args" rows="8" spellcheck="false"
+      class="h-auto font-mono text-xs" placeholder='{"topic": "Employee"}'
+      [attr.aria-invalid]="form.controls.args.invalid" aria-describedby="args-error"></textarea>
+    @if (form.controls.args.errors?.['json']; as message) {
+      <p id="args-error" class="text-sm text-destructive" role="alert">{{ message }}</p>
+    }
+  </hlm-field>
+
   <hlm-field orientation="horizontal" class="pt-2">
     <hlm-checkbox inputId="enabled" formControlName="enabled" />
     <label hlmFieldLabel for="enabled">Job Enabled</label>
+  </hlm-field>
+
+  <hlm-field orientation="horizontal">
+    <hlm-checkbox inputId="restart_on_exit" formControlName="restart_on_exit" />
+    <label hlmFieldLabel for="restart_on_exit">Restart on exit</label>
   </hlm-field>
 
   <div class="flex justify-end gap-3 pt-4 border-t mt-6">
