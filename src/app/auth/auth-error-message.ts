@@ -4,10 +4,11 @@
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { WebAuthnError } from '@simplewebauthn/browser';
+import { apiErrorDetail } from '../core/api-error';
 
 /**
  * Maps errors of the passkey login/registration flow to a user-facing message:
- * browser WebAuthn errors and backend JSON:API errors.
+ * browser WebAuthn errors and backend error envelopes.
  */
 export function authErrorMessage(err: unknown): string {
   if (err instanceof HttpErrorResponse) {
@@ -17,7 +18,7 @@ export function authErrorMessage(err: unknown): string {
     if (err.status === 429) {
       return 'Too many attempts. Please wait a minute and try again.';
     }
-    const detail = typeof err.error === 'string' ? err.error : err.error?.errors?.[0]?.detail;
+    const detail = typeof err.error === 'string' ? err.error : apiErrorDetail(err);
     return detail || 'Authentication failed.';
   }
 

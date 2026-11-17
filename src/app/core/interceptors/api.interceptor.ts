@@ -1,9 +1,34 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+
+/** True for the core-layer response envelope `{id, status, code, title, detail, meta, data}`. */
+function isEnvelope(body: unknown): body is { data: unknown } {
+  return !!body && typeof body === 'object' && !(body instanceof ArrayBuffer)
+    && ['id', 'status', 'code', 'meta', 'data'].every(key => key in body);
+}
+
+/** Error bodies of `responseType: 'arraybuffer'` requests (FlatBuffers) are JSON envelopes too. */
+function parseArrayBufferError(error: HttpErrorResponse): HttpErrorResponse {
+  if (!(error.error instanceof ArrayBuffer)) {
+    return error;
+  }
+  try {
+    const body = JSON.parse(new TextDecoder().decode(error.error));
+    return new HttpErrorResponse({
+      error: body,
+      headers: error.headers,
+      status: error.status,
+      statusText: error.statusText,
+      url: error.url ?? undefined
+    });
+  } catch {
+    return error;
+  }
+}
 
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   // Wenn die URL bereits http:// oder https:// enthält, ignoriere sie
@@ -20,7 +45,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   let headers = req.headers;
-  
+
   // Set default Accept header for API v1 content negotiation
   if (!headers.has('Accept')) {
     headers = headers.set('Accept', 'application/json');
@@ -38,9 +63,14 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   });
 
   return next(apiReq).pipe(
-    catchError((error: HttpErrorResponse) => {
-      // Handle unauthorized errors by clearing session and redirecting
-      if (error.status === 401 || error.status === 403) {
+    // Callers receive the resource payload (`data`) of the response envelope.
+    map(event => event instanceof HttpResponse && isEnvelope(event.body)
+      ? event.clone({ body: event.body.data })
+      : event),
+    catchError((raw: HttpErrorResponse) => {
+      const error = parseArrayBufferError(raw);
+      // Invalid session or deactivated account: clear the session. A missing permission (RBAC_FORBIDDEN) keeps it.
+      if (error.status === 401 || error.error?.code === 'USER_INACTIVE') {
         authService.logout();
       }
       return throwError(() => error);

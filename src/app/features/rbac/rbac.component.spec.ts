@@ -67,7 +67,7 @@ describe('RbacComponent', () => {
 
     await fixture.componentInstance.deleteUser(users[1]);
     http.expectOne({ method: 'DELETE', url: '/api/v1/iam/users/2' }).flush(
-      { errors: [{ status: '500', title: 'Database error', detail: 'connection refused' }] },
+      { id: 'x', status: 500, code: 'INTERNAL_ERROR', title: 'Internal Server Error', detail: 'connection refused', meta: {}, data: null },
       { status: 500, statusText: 'Internal Server Error' },
     );
 

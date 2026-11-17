@@ -5,6 +5,16 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.16.0] - 2026-11-17
+
+Adaptation to the core-layer API standardization ([core-layer #93](https://github.com/Zheng-Bote/mitm_core-layer/issues/93)). **Requires `mitm_http-server` 3.5.0 or later.**
+
+### Changed
+- **Response Envelope**: `apiInterceptor` unwraps `data` from the response envelope `{id, status, code, title, detail, meta, data}`; FlatBuffers responses stay binary, and their JSON error bodies are decoded. Error messages (login, user management, scheduler, upload) show the envelope `detail`.
+- **Role Assignment**: uses `PUT /api/v1/iam/users/:id/roles` instead of `POST /api/v1/iam/assign-role`.
+- **Scheduler**: "Add job" sends a single job to `POST /api/v1/jobs`; "Edit job" uses `PUT /api/v1/jobs/:name`.
+- **Session Handling**: the session ends on `401` and on `USER_INACTIVE`; a missing permission (`403 RBAC_FORBIDDEN`) no longer logs the user out.
+
 ## [v1.15.0] - 2026-11-03
 
 ### Added

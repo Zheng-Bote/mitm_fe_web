@@ -14,6 +14,7 @@ import { UserEditorDialogComponent } from './components/user-editor-dialog/user-
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { filterAndSortUsers, isPendingApproval, RoleFilter, SortDirection, SortKey, StatusFilter } from './user-table';
+import { apiErrorDetail } from '../../core/api-error';
 
 @Component({
   selector: 'app-rbac',
@@ -350,9 +351,7 @@ export class RbacComponent implements OnInit {
   }
 }
 
-/** The JSON:API error detail of a failed request, or its HTTP status text. */
+/** The error detail of a failed request, or its HTTP status text. */
 function errorDetail(err: unknown): string | undefined {
-  const e = err as { error?: { errors?: { detail?: string; title?: string }[] }; statusText?: string };
-  const first = e?.error?.errors?.[0];
-  return first?.detail ?? first?.title ?? e?.statusText ?? undefined;
+  return apiErrorDetail(err) ?? (err as { statusText?: string })?.statusText ?? undefined;
 }

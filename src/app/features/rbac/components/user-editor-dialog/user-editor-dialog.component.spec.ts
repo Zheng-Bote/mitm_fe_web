@@ -94,8 +94,8 @@ describe('UserEditorDialogComponent', () => {
       await component.save();
 
       http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/1' }).flush(null);
-      const assign = http.expectOne('/api/v1/iam/assign-role');
-      expect(assign.request.body).toEqual({ user_id: 1, role_ids: [] });
+      const assign = http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/1/roles' });
+      expect(assign.request.body).toEqual({ role_ids: [] });
       expect(fetchRoles).not.toHaveBeenCalled();
       assign.flush(null);
       expect(fetchRoles).toHaveBeenCalledTimes(1);
@@ -161,8 +161,8 @@ describe('UserEditorDialogComponent', () => {
     component.save();
 
     http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/7' }).flush(null);
-    const assign = http.expectOne({ method: 'POST', url: '/api/v1/iam/assign-role' });
-    expect(assign.request.body).toEqual({ user_id: 7, role_ids: [2] });
+    const assign = http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/7/roles' });
+    expect(assign.request.body).toEqual({ role_ids: [2] });
     assign.flush(null);
     expect(saved).toHaveBeenCalled();
   });
@@ -171,7 +171,7 @@ describe('UserEditorDialogComponent', () => {
     openEdit(user, [3]);
     component.save();
     http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/7' }).flush(null);
-    http.expectNone('/api/v1/iam/assign-role');
+    http.expectNone('/api/v1/iam/users/7/roles');
   });
 
   it('assigns the selected roles to a new user using the returned id', () => {
@@ -181,8 +181,8 @@ describe('UserEditorDialogComponent', () => {
     component.save();
 
     http.expectOne({ method: 'POST', url: '/api/v1/iam/users' }).flush({ id: 42 }, { status: 201, statusText: 'Created' });
-    const assign = http.expectOne({ method: 'POST', url: '/api/v1/iam/assign-role' });
-    expect(assign.request.body).toEqual({ user_id: 42, role_ids: [3] });
+    const assign = http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/42/roles' });
+    expect(assign.request.body).toEqual({ role_ids: [3] });
     assign.flush(null);
   });
 
@@ -203,7 +203,7 @@ describe('UserEditorDialogComponent', () => {
     const put = http.expectOne({ method: 'PUT', url: '/api/v1/iam/users/7' });
     expect(put.request.body.is_active).toBe(true);
     put.flush(null);
-    expect(http.expectOne('/api/v1/iam/assign-role').request.body).toEqual({ user_id: 7, role_ids: [3] });
+    expect(http.expectOne('/api/v1/iam/users/7/roles').request.body).toEqual({ role_ids: [3] });
   });
 
   it('keeps saving disabled when the roles of the user cannot be loaded', () => {
@@ -225,7 +225,7 @@ describe('UserEditorDialogComponent', () => {
     component.save();
 
     http.expectOne({ method: 'POST', url: '/api/v1/iam/users' }).flush({ id: 42 });
-    http.expectOne('/api/v1/iam/assign-role').flush(null, { status: 500, statusText: 'Server Error' });
+    http.expectOne('/api/v1/iam/users/42/roles').flush(null, { status: 500, statusText: 'Server Error' });
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('assigning the roles failed');
