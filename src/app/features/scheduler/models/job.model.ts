@@ -7,6 +7,9 @@ export interface Job {
   command: string;
   cron_expr: string;
   enabled: boolean;
+  /** Program arguments (`scheduled_programs.args`, JSON object). */
+  args: Record<string, unknown> | null;
+  restart_on_exit: boolean;
   next_run?: string;
   is_running?: boolean;
   active_pid?: number;

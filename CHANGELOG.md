@@ -5,6 +5,11 @@ All notable changes to the `mitm_fe_web` (Angular Web Frontend) component will b
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.17.0] - 2026-11-17
+
+### Fixed
+- **Scheduler Job Args** ([#29](https://github.com/Zheng-Bote/mitm_fe_web/issues/29)): "Add Job" and "Edit Job" no longer fail with `422`. The job editor has a "JSON Args" text field (`scheduled_programs.args`, pre-filled with the job's current args, `{}` for new jobs) and a "Restart on exit" checkbox. Invalid JSON or a root that is not an object blocks "Save" and shows the parse error. Editing keeps unchanged args intact. A rejected save keeps the dialog open and shows the server's error detail as a toast.
+
 ## [v1.16.0] - 2026-11-17
 
 Adaptation to the core-layer API standardization ([core-layer #93](https://github.com/Zheng-Bote/mitm_core-layer/issues/93)). **Requires `mitm_http-server` 3.5.0 or later.**
